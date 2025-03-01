@@ -1,6 +1,6 @@
 // src/components/RoomList.tsx
 import React from "react";
-import { useRooms } from "../hooks/useRooms";
+import useRooms from "../hooks/useRooms";
 
 const RoomList: React.FC = () => {
   const { rooms, loading, error } = useRooms();
