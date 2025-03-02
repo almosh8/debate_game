@@ -1,13 +1,15 @@
 // src/application/useCases/CreateRoomUseCase.ts
 import { Room } from "../../domain/Room";
 import { IRoomRepository } from "../interfaces/IRoomRepository";
-import { Logger } from "../../infrastructure/Logger";
+import { Logger } from "../../utils/Logger";
 import { v4 as uuid } from "uuid";
 
 export class CreateRoomUseCase {
   private logger: Logger = Logger.getInstance();
 
-  constructor(private roomRepository: IRoomRepository) {}
+  constructor(private roomRepository: IRoomRepository) {
+    this.logger.info("CreateRoomUseCase initialized");
+  }
 
   private isAdminIP(ip: string): boolean {
     const adminIPs = process.env.ADMIN_IPS?.split(",") || [];

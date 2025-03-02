@@ -11,10 +11,15 @@ const CreateRoomForm: React.FC = () => {
     setError(null);
     setSuccess(false);
 
+    console.log("Submitting form with adminId:", adminId); // Логирование перед отправкой запроса
+
     try {
+      console.log("Calling createRoom API..."); // Логирование перед вызовом API
       await createRoom(adminId);
+      console.log("Room created successfully!"); // Логирование успешного создания комнаты
       setSuccess(true);
     } catch (err) {
+      console.error("Error creating room:", err); // Логирование ошибки
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -22,6 +27,8 @@ const CreateRoomForm: React.FC = () => {
       }
     }
   };
+
+  console.log("Rendering CreateRoomForm..."); // Логирование рендеринга компонента
 
   return (
     <div style={styles.container}>
@@ -35,7 +42,10 @@ const CreateRoomForm: React.FC = () => {
             id="adminId"
             type="text"
             value={adminId}
-            onChange={(e) => setAdminId(e.target.value)}
+            onChange={(e) => {
+              console.log("Admin ID changed:", e.target.value); // Логирование изменения adminId
+              setAdminId(e.target.value);
+            }}
             required
             style={styles.input}
           />

@@ -1,4 +1,7 @@
 // src/domain/Room.ts
+
+import { Player } from "./Player"
+
 export class Room {
     constructor(
       public readonly id: string,
