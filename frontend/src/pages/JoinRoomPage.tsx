@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoomUpdates } from "../services/api";
+import { Room } from "../domain/Room";
+import { Player } from "../domain/Player";
 
 const JoinRoomPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>(); // Извлекаем roomId из URL
@@ -54,7 +56,8 @@ const JoinRoomPage: React.FC = () => {
     }
 
     try {
-      await joinRoom(roomId!, username, seatNumber);
+      const room: Room = await joinRoom(roomId!, username, seatNumber);
+      localStorage.setItem("playerId", (room.players.find(player => player.username === username))?.id || "none");
       navigate(`/room/${roomId}`); // Перенаправляем на страницу комнаты
     } catch (err) {
       if (err instanceof Error) {

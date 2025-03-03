@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { CreateRoomUseCase } from "../../application/useCases/CreateRoomUseCase";
 import { GetRoomUseCase } from "../../application/useCases/GetRoomUseCase";
 import { JoinRoomUseCase } from "../../application/useCases/JoinRoomUseCase";
+import { RemovePlayerUseCase } from "../../application/useCases/RemovePlayerUseCase";
 import { Logger } from "../../utils/Logger";
 import { Server } from "socket.io";
 
@@ -13,6 +14,7 @@ export class RoomController {
     private createRoomUseCase: CreateRoomUseCase,
     private getRoomUseCase: GetRoomUseCase,
     private joinRoomUseCase: JoinRoomUseCase,
+    private removePlayerUseCase: RemovePlayerUseCase, // Добавляем RemovePlayerUseCase
     private io: Server
   ) {
     this.logger.info("RoomController initialized");
@@ -71,6 +73,27 @@ export class RoomController {
       this.logger.info(`User joined room successfully: ${roomId}`);
     } catch (error) {
       this.logger.error(`Error joining room: ${error}`);
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: "An unexpected error occurred" });
+      }
+    }
+  }
+
+  async removePlayer(req: Request, res: Response) {
+    const { roomId } = req.params;
+    const { playerId } = req.body;
+
+    this.logger.info(`Request to remove player: ${playerId} from room: ${roomId}`);
+
+    try {
+      const room = await this.removePlayerUseCase.execute(roomId, playerId);
+      this.io.to(room.id).emit("roomUpdated", room); // Отправляем обновление через WebSocket
+      res.status(200).json(room);
+      this.logger.info(`Player removed successfully: ${playerId}`);
+    } catch (error) {
+      this.logger.error(`Error removing player: ${error}`);
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {

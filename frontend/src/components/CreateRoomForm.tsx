@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createRoom } from "../services/api";
+import { Room } from "../domain/Room";
 
 const CreateRoomForm: React.FC = () => {
   const [adminId, setAdminId] = useState("");
@@ -13,7 +14,9 @@ const CreateRoomForm: React.FC = () => {
     setError(null);
 
     try {
-      const room = await createRoom(adminId);
+      const room: Room = await createRoom(adminId);
+      //айди создателя комнаты
+      localStorage.setItem("playerId", room.players[0].id);
       navigate(`/room/${room.id}`);
     } catch (err) {
       if (err instanceof Error) {

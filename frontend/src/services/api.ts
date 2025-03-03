@@ -72,6 +72,19 @@ export const joinRoom = async (roomId: string, username: string, seatNumber: num
   }
 };
 
+// Удаление игрока из комнаты
+export const removePlayer = async (roomId: string, playerId: string) => {
+  console.log("Removing player:", playerId, "from room:", roomId);
+  try {
+    const response = await axios.post(`${API_BASE_URL}/rooms/${roomId}/removePlayer`, { playerId });
+    console.log("Player removed successfully:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error removing player:", error);
+    throw error;
+  }
+};
+
 // Инициализация WebSocket
 let socket: Socket | null = null;
 

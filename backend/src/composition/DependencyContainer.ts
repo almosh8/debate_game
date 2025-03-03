@@ -4,6 +4,7 @@ import { RoomRepository } from "../infrastructure/repositories/RoomRepository";
 import { CreateRoomUseCase } from "../application/useCases/CreateRoomUseCase";
 import { GetRoomUseCase } from "../application/useCases/GetRoomUseCase";
 import { JoinRoomUseCase } from "../application/useCases/JoinRoomUseCase";
+import { RemovePlayerUseCase } from "../application/useCases/RemovePlayerUseCase";
 import { RoomController } from "../presentation/controllers/RoomController";
 import { GetRoomController } from "../presentation/controllers/GetRoomController";
 import { Logger } from "../utils/Logger";
@@ -16,6 +17,7 @@ export class DependencyContainer {
   private createRoomUseCase: CreateRoomUseCase;
   private getRoomUseCase: GetRoomUseCase;
   private joinRoomUseCase: JoinRoomUseCase;
+  private removePlayerUseCase: RemovePlayerUseCase;
   private roomController: RoomController;
   private getRoomController: GetRoomController;
   private logger: Logger = Logger.getInstance();
@@ -28,10 +30,12 @@ export class DependencyContainer {
     this.createRoomUseCase = new CreateRoomUseCase(this.roomRepository);
     this.getRoomUseCase = new GetRoomUseCase(this.roomRepository);
     this.joinRoomUseCase = new JoinRoomUseCase(this.roomRepository);
+    this.removePlayerUseCase = new RemovePlayerUseCase(this.roomRepository);
     this.roomController = new RoomController(
       this.createRoomUseCase,
       this.getRoomUseCase,
       this.joinRoomUseCase,
+    this.removePlayerUseCase,
       this.io
     );
     this.getRoomController = new GetRoomController(this.getRoomUseCase);

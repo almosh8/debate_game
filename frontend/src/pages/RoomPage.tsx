@@ -1,13 +1,15 @@
 // src/pages/RoomPage.tsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getRoom, subscribeToRoomUpdates, unsubscribeFromRoomUpdates } from "../services/api";
+import { getRoom, subscribeToRoomUpdates, unsubscribeFromRoomUpdates, removePlayer } from "../services/api";
+import { initSocket } from "../services/api";
 
 const RoomPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const [room, setRoom] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false); // Состояние для уведомления "Скопировано"
 
   // Загрузка данных о комнате при первом рендере
@@ -17,6 +19,7 @@ const RoomPage: React.FC = () => {
         const roomData = await getRoom(roomId!);
         setRoom(roomData);
         setPlayers(roomData.players);
+        setCurrentPlayerId(localStorage.getItem("playerId"));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -27,6 +30,21 @@ const RoomPage: React.FC = () => {
     };
 
     fetchRoom();
+  }, [roomId]);
+
+  // Подключение к WebSocket
+  useEffect(() => {
+    const socket = initSocket();
+    const playerId = localStorage.getItem("playerId");
+    console.log("player id is ", playerId);
+
+    if (playerId && roomId) {
+      socket.emit("joinRoom", roomId, playerId); // Отправляем playerId при подключении
+    }
+
+    return () => {
+      socket.disconnect();
+    };
   }, [roomId]);
 
   // Подписка на обновления комнаты
@@ -44,6 +62,19 @@ const RoomPage: React.FC = () => {
       }
     };
   }, [roomId]);
+
+  // Удаление игрока
+  const handleRemovePlayer = async (playerId: string) => {
+    try {
+      await removePlayer(roomId!, playerId);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    }
+  };
 
   // Функция для копирования ссылки
   const copyLinkToClipboard = () => {
@@ -79,14 +110,24 @@ const RoomPage: React.FC = () => {
           style={styles.linkInput}
           onClick={copyLinkToClipboard} // Копируем ссылку при клике
         />
-        {isCopied && <p style={styles.copiedText}>Скопировано!</p>} {/* Уведомление "Скопировано" */}
+        {isCopied && <p style={styles.copiedText}>Copied!</p>} {/* Уведомление "Скопировано" */}
       </div>
       <div style={styles.playersContainer}>
         <h2>Players:</h2>
         <ul>
           {players.map((player) => (
-            <li key={player.id}>
-              {player.username} (Seat {player.seatNumber})
+            <li
+              key={player.id}
+              style={{
+                color: player.id === currentPlayerId ? "green" : "black",
+              }}
+            >
+              {player.username} (Seat {player.seatNumber}) {player.id === currentPlayerId && "(You)"}
+              {room.adminId === currentPlayerId && player.id !== currentPlayerId && ( // Кнопка удаления для админа
+                <button onClick={() => handleRemovePlayer(player.id)} style={styles.removeButton}>
+                  Remove
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -112,13 +153,22 @@ const styles = {
     border: "1px solid #ccc",
     cursor: "pointer", // Курсор в виде указателя
   },
+  playersContainer: {
+    marginTop: "20px",
+  },
+  removeButton: {
+    marginLeft: "10px",
+    padding: "5px 10px",
+    backgroundColor: "red",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
   copiedText: {
     color: "green",
     fontSize: "14px",
     marginTop: "5px",
-  },
-  playersContainer: {
-    marginTop: "20px",
   },
 };
 
