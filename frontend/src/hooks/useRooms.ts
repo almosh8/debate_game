@@ -13,12 +13,11 @@ const useRooms = () => {
         const data = await getRooms();
         setRooms(data);
       } catch (err) {
-        // Type guard to check if err is an Error object
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred.");
-      }
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred.");
+        }
       } finally {
         setLoading(false);
       }

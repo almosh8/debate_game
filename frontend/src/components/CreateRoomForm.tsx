@@ -1,25 +1,21 @@
+// src/components/CreateRoomForm.tsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createRoom } from "../services/api";
 
 const CreateRoomForm: React.FC = () => {
   const [adminId, setAdminId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
-
-    console.log("Submitting form with adminId:", adminId); // Логирование перед отправкой запроса
 
     try {
-      console.log("Calling createRoom API..."); // Логирование перед вызовом API
-      await createRoom(adminId);
-      console.log("Room created successfully!"); // Логирование успешного создания комнаты
-      setSuccess(true);
+      const room = await createRoom(adminId);
+      navigate(`/room/${room.id}`);
     } catch (err) {
-      console.error("Error creating room:", err); // Логирование ошибки
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -27,8 +23,6 @@ const CreateRoomForm: React.FC = () => {
       }
     }
   };
-
-  console.log("Rendering CreateRoomForm..."); // Логирование рендеринга компонента
 
   return (
     <div style={styles.container}>
@@ -42,10 +36,7 @@ const CreateRoomForm: React.FC = () => {
             id="adminId"
             type="text"
             value={adminId}
-            onChange={(e) => {
-              console.log("Admin ID changed:", e.target.value); // Логирование изменения adminId
-              setAdminId(e.target.value);
-            }}
+            onChange={(e) => setAdminId(e.target.value)}
             required
             style={styles.input}
           />
@@ -53,30 +44,22 @@ const CreateRoomForm: React.FC = () => {
         <button type="submit" style={styles.button}>
           Create
         </button>
-        {/* Окно с результатом запроса */}
-        {(error || success) && (
-          <div style={styles.resultWindow}>
-            {error && <p style={styles.error}>{error}</p>}
-            {success && <p style={styles.success}>Room created successfully!</p>}
-          </div>
-        )}
+        {error && <p style={styles.error}>{error}</p>}
       </form>
     </div>
   );
 };
 
-export default CreateRoomForm;
-
-// Типизированные стили
-const styles: { [key: string]: React.CSSProperties } = {
+// Добавляем объект styles
+const styles = {
   container: {
     display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-start", // Форма ближе к верху
+    flexDirection: "column" as const,
+    justifyContent: "flex-start",
     alignItems: "center",
     height: "100vh",
     backgroundColor: "#f0f0f0",
-    paddingTop: "50px", // Уменьшенный отступ сверху
+    paddingTop: "50px",
   },
   title: {
     fontSize: "48px",
@@ -85,7 +68,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   form: {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column" as const,
     alignItems: "center",
     padding: "20px",
     backgroundColor: "#ffffff",
@@ -95,7 +78,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   inputGroup: {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column" as const,
     marginBottom: "20px",
     width: "100%",
   },
@@ -120,17 +103,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
     width: "100%",
   },
-  resultWindow: {
-    marginTop: "20px",
-    width: "100%",
-    textAlign: "center",
-  },
   error: {
     color: "red",
     fontSize: "18px",
   },
-  success: {
-    color: "green",
-    fontSize: "18px",
-  },
 };
+
+export default CreateRoomForm;
