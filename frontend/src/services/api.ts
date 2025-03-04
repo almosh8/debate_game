@@ -114,5 +114,6 @@ export const disconnectSocket = (socket: Socket) => {
   if (socket) {
     socket.disconnect();
     logger.info("WebSocket disconnected");
+    console.trace();
   }
 };

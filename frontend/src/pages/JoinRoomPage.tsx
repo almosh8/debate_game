@@ -4,6 +4,7 @@ import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoom
 import { Room } from "../domain/Room";
 import { Socket } from "socket.io-client";
 import { Logger } from "../utils/Logger";
+import { v4 as uuid } from "uuid"; // Импортируем uuid
 
 const logger = Logger.getInstance();
 
@@ -14,18 +15,23 @@ const JoinRoomPage: React.FC = () => {
   const [occupiedSeats, setOccupiedSeats] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [tempId, setId] = useState("");
   const navigate = useNavigate();
 
   // Initialize socket on component mount
   useEffect(() => {
     const newSocket = initSocket();
     setSocket(newSocket);
+    logger.info(`${newSocket.active}`);
+
+    //рандомный айди для сокета
+    setId(uuid());
 
     return () => {
-      if (newSocket) {
-        disconnectSocket(newSocket);
-      }
-    };
+          if (newSocket) {
+            disconnectSocket(newSocket);
+          }
+        };
   }, []);
 
   // Fetch occupied seats when roomId or socket changes
@@ -37,6 +43,7 @@ const JoinRoomPage: React.FC = () => {
         logger.info(`Fetching occupied seats for room: ${roomId}`);
         const seats = await getOccupiedSeats(roomId, socket);
         setOccupiedSeats(seats);
+        logger.info(`after fetching occupied seats ${roomId}, ${socket.connected}`);
       } catch (err) {
         if (err instanceof Error) {
           logger.error(`Error fetching occupied seats: ${err.message}`);
@@ -46,23 +53,24 @@ const JoinRoomPage: React.FC = () => {
           setError("An unexpected error occurred.");
         }
       }
+      if(tempId) socket.emit("joinRoom", roomId, tempId);
     };
 
     fetchOccupiedSeats();
-  }, [roomId, socket]);
+  }, [roomId, tempId, socket]);
 
   // Subscribe to room updates when roomId or socket changes
   useEffect(() => {
     if (!socket || !roomId) return;
 
-    subscribeToRoomUpdates(roomId, "pending", (updatedRoom) => {
+    logger.info(`Attempting to subscribeToRoomUpdates: roomId, socket = ${roomId}, ${socket.connected}`);
+    subscribeToRoomUpdates(roomId, tempId, // рандомный айди, нигде больше не используется
+    (updatedRoom) => {
       setOccupiedSeats(updatedRoom.players.map((player: any) => player.seatNumber));
+      logger.info("occupiedSeats updated");
     }, socket);
 
-    return () => {
-      unsubscribeFromRoomUpdates(roomId, socket);
-    };
-  }, [roomId, socket]);
+  }, [roomId, tempId, socket]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +88,7 @@ const JoinRoomPage: React.FC = () => {
       logger.info(`Attempting to join room: ${roomId} with username: ${username} and seat: ${seatNumber}`);
       const room: Room = await joinRoom(roomId, username, seatNumber, socket);
       localStorage.setItem("playerId", (room.players.find(player => player.username === username))?.id || "none");
+      disconnectSocket(socket);
       navigate(`/room/${roomId}`);
     } catch (err) {
       if (err instanceof Error) {

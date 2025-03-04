@@ -64,7 +64,7 @@ const RoomPage: React.FC = () => {
   useEffect(() => {
     if (!socket || !roomId || !currentPlayerId) return;
 
-    logger.info(`Attempting to subscribeToRoomUpdates: roomId = ${roomId}; currentPlayerId ${currentPlayerId}`);
+    logger.info(`Attempting to subscribeToRoomUpdates: roomId = ${roomId}; currentPlayerId ${currentPlayerId}; socket: ${socket.active}`);
     subscribeToRoomUpdates(roomId, currentPlayerId, (updatedRoom) => {
       setRoom(updatedRoom);
       setPlayers(updatedRoom.players);

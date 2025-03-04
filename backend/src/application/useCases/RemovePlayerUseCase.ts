@@ -13,9 +13,15 @@ export class RemovePlayerUseCase {
   async execute(roomId: string, playerId: string): Promise<Room> {
     this.logger.info(`Removing player: ${playerId} from room: ${roomId}`);
 
+
     const room = await this.roomRepository.findById(roomId);
     if (!room) {
       throw new Error("Room not found");
+    }
+
+
+    if(playerId === "pending") {
+      return room;
     }
 
     // Удаляем игрока

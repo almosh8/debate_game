@@ -12,8 +12,8 @@ const useRooms = () => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const data = await getRooms();
-        setRooms(data);
+        //const data = await getRooms();
+        //setRooms(data);
       } catch (err) {
         if (err instanceof Error) {
           logger.error(`Error fetching rooms: ${err.message}`);

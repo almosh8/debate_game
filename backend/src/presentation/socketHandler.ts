@@ -32,11 +32,9 @@ export class SocketHandler {
         if (playerId && roomId) {
           try {
             // Удаляем игрока из комнаты
-            if (playerId !== "pending") {
               const room = await this.removePlayerUseCase.execute(roomId, playerId);
               this.emitRoomUpdate(roomId, room); // Отправляем обновление через WebSocket
               logger.info(`Player ${playerId} removed from room due to disconnect`); // Логируем удаление игрока
-            }
           } catch (error) {
             if (error instanceof Error) {
               logger.error(`Error removing player ${playerId}: ${error.message}`); // Логируем ошибку
