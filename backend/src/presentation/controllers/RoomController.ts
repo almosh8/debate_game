@@ -5,7 +5,7 @@ import { GetRoomUseCase } from "../../application/useCases/GetRoomUseCase";
 import { JoinRoomUseCase } from "../../application/useCases/JoinRoomUseCase";
 import { RemovePlayerUseCase } from "../../application/useCases/RemovePlayerUseCase";
 import { Logger } from "../../utils/Logger";
-import { Server } from "socket.io";
+import { SocketHandler } from "../socketHandler";
 
 export class RoomController {
   private logger: Logger = Logger.getInstance();
@@ -15,7 +15,7 @@ export class RoomController {
     private getRoomUseCase: GetRoomUseCase,
     private joinRoomUseCase: JoinRoomUseCase,
     private removePlayerUseCase: RemovePlayerUseCase, // Добавляем RemovePlayerUseCase
-    private io: Server
+    private socketHandler: SocketHandler
   ) {
     this.logger.info("RoomController initialized");
   }
@@ -28,7 +28,7 @@ export class RoomController {
 
     try {
       const room = await this.createRoomUseCase.execute(adminId, userIP);
-      this.io.to(room.id).emit("roomUpdated", room); // Отправляем обновление через WebSocket
+      this.socketHandler.emitRoomUpdate(room.id, room); // Отправляем обновление через WebSocket
       res.status(201).json(room);
       this.logger.info(`Room created successfully: ${room.id}`);
     } catch (error) {
@@ -68,7 +68,7 @@ export class RoomController {
 
     try {
       const room = await this.joinRoomUseCase.execute(roomId, username, seatNumber);
-      this.io.to(room.id).emit("roomUpdated", room); // Отправляем обновление через WebSocket
+      this.socketHandler.emitRoomUpdate(room.id, room); // Отправляем обновление через WebSocket
       res.status(200).json(room);
       this.logger.info(`User joined room successfully: ${roomId}`);
     } catch (error) {
@@ -89,7 +89,7 @@ export class RoomController {
 
     try {
       const room = await this.removePlayerUseCase.execute(roomId, playerId);
-      this.io.to(room.id).emit("roomUpdated", room); // Отправляем обновление через WebSocket
+      this.socketHandler.emitRoomUpdate(room.id, room); // Отправляем обновление через WebSocket
       res.status(200).json(room);
       this.logger.info(`Player removed successfully: ${playerId}`);
     } catch (error) {

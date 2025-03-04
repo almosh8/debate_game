@@ -53,6 +53,7 @@ const RoomPage: React.FC = () => {
       subscribeToRoomUpdates(roomId, (updatedRoom) => {
         setRoom(updatedRoom);
         setPlayers(updatedRoom.players);
+        console.log("room change handled");
       });
     }
 

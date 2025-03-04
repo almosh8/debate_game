@@ -89,7 +89,7 @@ export const removePlayer = async (roomId: string, playerId: string) => {
 let socket: Socket | null = null;
 
 export const initSocket = () => {
-  if (!socket) {
+  if (!socket || !socket.connected) {
     socket = io(API_BASE_URL);
     console.log("WebSocket connected");
   }
@@ -102,6 +102,15 @@ export const subscribeToRoomUpdates = (roomId: string, callback: (room: any) => 
   socket.emit("joinRoom", roomId);
   socket.on("roomUpdated", callback);
   console.log("Subscribed to room updates:", roomId);
+
+  // Обработка ошибок
+  socket.on("connect_error", (err) => {
+    console.error("Connection error:", err);
+  });
+
+  socket.on("error", (err) => {
+    console.error("WebSocket error:", err);
+  });
 };
 
 // Отписка от обновлений комнаты
@@ -110,5 +119,14 @@ export const unsubscribeFromRoomUpdates = (roomId: string) => {
     socket.off("roomUpdated");
     socket.emit("leaveRoom", roomId);
     console.log("Unsubscribed from room updates:", roomId);
+  }
+};
+
+// Отключение WebSocket
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+    console.log("WebSocket disconnected");
   }
 };

@@ -10,6 +10,7 @@ import { GetRoomController } from "../presentation/controllers/GetRoomController
 import { Logger } from "../utils/Logger";
 import { LevelDBClient } from "../infrastructure/LevelDBClient";
 import { Server } from "socket.io";
+import { SocketHandler } from "../presentation/socketHandler";
 
 export class DependencyContainer {
   private db: DatabaseClient;
@@ -20,6 +21,7 @@ export class DependencyContainer {
   private removePlayerUseCase: RemovePlayerUseCase;
   private roomController: RoomController;
   private getRoomController: GetRoomController;
+  private socketHandler: SocketHandler;
   private logger: Logger = Logger.getInstance();
 
   constructor(private io: Server) {
@@ -31,12 +33,13 @@ export class DependencyContainer {
     this.getRoomUseCase = new GetRoomUseCase(this.roomRepository);
     this.joinRoomUseCase = new JoinRoomUseCase(this.roomRepository);
     this.removePlayerUseCase = new RemovePlayerUseCase(this.roomRepository);
+    this.socketHandler = new SocketHandler(this.io, this.removePlayerUseCase);
     this.roomController = new RoomController(
       this.createRoomUseCase,
       this.getRoomUseCase,
       this.joinRoomUseCase,
     this.removePlayerUseCase,
-      this.io
+      this.socketHandler
     );
     this.getRoomController = new GetRoomController(this.getRoomUseCase);
 
@@ -49,5 +52,9 @@ export class DependencyContainer {
 
   getGetRoomController(): GetRoomController {
     return this.getRoomController;
+  }
+
+  getRemovePlayerUseCase(): RemovePlayerUseCase {
+    return this.removePlayerUseCase;
   }
 }

@@ -18,23 +18,4 @@ export class RoomUseCase {
     return room;
   }
 
-  async joinRoom(roomId: string, username: string): Promise<Room> {
-    const room = await this.roomRepository.findById(roomId);
-    if (!room) {
-      throw new Error("Room not found");
-    }
-    const player = new Player(uuid(), username, "participant");
-    room.players.push(player);
-    await this.roomRepository.save(room);
-    this.webSocketClient.joinRoom(room.id); // Присоединяемся к комнате через WebSocket
-    return room;
-  }
-
-  subscribeToRoomUpdates(roomId: string, callback: (room: any) => void): void {
-    this.webSocketClient.onRoomUpdated(callback);
-  }
-
-  unsubscribeFromRoomUpdates(roomId: string): void {
-    this.webSocketClient.offRoomUpdated();
-  }
 }
