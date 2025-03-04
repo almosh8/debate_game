@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoomUpdates } from "../services/api";
+import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoomUpdates, initSocket, disconnectSocket } from "../services/api";
 import { Room } from "../domain/Room";
-import { Logger } from "../utils/Logger"
+import { Socket } from "socket.io-client";
+import { Logger } from "../utils/Logger";
 
 const logger = Logger.getInstance();
 
@@ -12,13 +13,29 @@ const JoinRoomPage: React.FC = () => {
   const [seatNumber, setSeatNumber] = useState<number | null>(null);
   const [occupiedSeats, setOccupiedSeats] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const navigate = useNavigate();
 
+  // Initialize socket on component mount
+  useEffect(() => {
+    const newSocket = initSocket();
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        disconnectSocket(newSocket);
+      }
+    };
+  }, []);
+
+  // Fetch occupied seats when roomId or socket changes
   useEffect(() => {
     const fetchOccupiedSeats = async () => {
+      if (!socket || !roomId) return;
+
       try {
         logger.info(`Fetching occupied seats for room: ${roomId}`);
-        const seats = await getOccupiedSeats(roomId!);
+        const seats = await getOccupiedSeats(roomId, socket);
         setOccupiedSeats(seats);
       } catch (err) {
         if (err instanceof Error) {
@@ -32,15 +49,20 @@ const JoinRoomPage: React.FC = () => {
     };
 
     fetchOccupiedSeats();
-  }, [roomId]);
+  }, [roomId, socket]);
 
+  // Subscribe to room updates when roomId or socket changes
   useEffect(() => {
-    if (roomId) {
-      subscribeToRoomUpdates("penging_" + roomId, "pending", (updatedRoom) => {
-        setOccupiedSeats(updatedRoom.players.map((player: any) => player.seatNumber));
-      });
-    }
-  }, [roomId]);
+    if (!socket || !roomId) return;
+
+    subscribeToRoomUpdates(roomId, "pending", (updatedRoom) => {
+      setOccupiedSeats(updatedRoom.players.map((player: any) => player.seatNumber));
+    }, socket);
+
+    return () => {
+      unsubscribeFromRoomUpdates(roomId, socket);
+    };
+  }, [roomId, socket]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,10 +74,11 @@ const JoinRoomPage: React.FC = () => {
       return;
     }
 
+    if (!socket || !roomId) return;
+
     try {
       logger.info(`Attempting to join room: ${roomId} with username: ${username} and seat: ${seatNumber}`);
-      unsubscribeFromRoomUpdates(roomId!);
-      const room: Room = await joinRoom(roomId!, username, seatNumber);
+      const room: Room = await joinRoom(roomId, username, seatNumber, socket);
       localStorage.setItem("playerId", (room.players.find(player => player.username === username))?.id || "none");
       navigate(`/room/${roomId}`);
     } catch (err) {

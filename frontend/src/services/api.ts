@@ -1,6 +1,6 @@
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
-import { Logger } from "../utils/Logger"
+import { Logger } from "../utils/Logger";
 
 const logger = Logger.getInstance();
 
@@ -20,7 +20,7 @@ export const createRoom = async (adminId: string) => {
   }
 };
 
-export const getRoom = async (roomId: string) => {
+export const getRoom = async (roomId: string, socket: Socket) => {
   logger.info(`Fetching room: ${roomId}`);
   try {
     const response = await axios.get(`${API_BASE_URL}/rooms/${roomId}`);
@@ -44,10 +44,10 @@ export const getRooms = async () => {
   }
 };
 
-export const getOccupiedSeats = async (roomId: string) => {
+export const getOccupiedSeats = async (roomId: string, socket: Socket) => {
   logger.info(`Fetching occupied seats for room: ${roomId}`);
   try {
-    const room = await getRoom(roomId);
+    const room = await getRoom(roomId, socket);
     const occupiedSeats = room.players.map((player: any) => player.seatNumber);
     logger.info(`Occupied seats fetched successfully: ${occupiedSeats}`);
     return occupiedSeats;
@@ -57,7 +57,7 @@ export const getOccupiedSeats = async (roomId: string) => {
   }
 };
 
-export const joinRoom = async (roomId: string, username: string, seatNumber: number) => {
+export const joinRoom = async (roomId: string, username: string, seatNumber: number, socket: Socket) => {
   logger.info(`Joining room: ${roomId} with username: ${username} and seat: ${seatNumber}`);
   try {
     const response = await axios.post(`${API_BASE_URL}/rooms/${roomId}/join`, { username, seatNumber });
@@ -69,7 +69,7 @@ export const joinRoom = async (roomId: string, username: string, seatNumber: num
   }
 };
 
-export const removePlayer = async (roomId: string, playerId: string) => {
+export const removePlayer = async (roomId: string, playerId: string, socket: Socket) => {
   logger.info(`Removing player: ${playerId} from room: ${roomId}`);
   try {
     const response = await axios.post(`${API_BASE_URL}/rooms/${roomId}/removePlayer`, { playerId });
@@ -81,20 +81,15 @@ export const removePlayer = async (roomId: string, playerId: string) => {
   }
 };
 
-let socket: Socket | null = null;
-
 export const initSocket = () => {
-  if (!socket || !socket.connected) {
-    socket = io(API_BASE_URL);
-    logger.info("WebSocket connected");
-  }
+  const socket = io(API_BASE_URL);
+  logger.info("WebSocket connected");
   return socket;
 };
 
-export const subscribeToRoomUpdates = (roomId: string, playerId: string, callback: (room: any) => void) => {
-  if(!roomId || !playerId) return;
-  
-  const socket = initSocket();
+export const subscribeToRoomUpdates = (roomId: string, playerId: string, callback: (room: any) => void, socket: Socket) => {
+  if (!roomId || !playerId) return;
+
   socket.on("roomUpdated", callback);
   logger.info(`Subscribed to room updates: ${roomId}`);
 
@@ -107,7 +102,7 @@ export const subscribeToRoomUpdates = (roomId: string, playerId: string, callbac
   });
 };
 
-export const unsubscribeFromRoomUpdates = (roomId: string) => {
+export const unsubscribeFromRoomUpdates = (roomId: string, socket: Socket) => {
   if (socket) {
     socket.off("roomUpdated");
     socket.emit("leaveRoom", roomId);
@@ -115,10 +110,9 @@ export const unsubscribeFromRoomUpdates = (roomId: string) => {
   }
 };
 
-export const disconnectSocket = () => {
+export const disconnectSocket = (socket: Socket) => {
   if (socket) {
     socket.disconnect();
-    socket = null;
     logger.info("WebSocket disconnected");
   }
 };

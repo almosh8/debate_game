@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getRoom, subscribeToRoomUpdates, removePlayer } from "../services/api";
-import { initSocket } from "../services/api";
+import { getRoom, subscribeToRoomUpdates, removePlayer, initSocket, disconnectSocket } from "../services/api";
+import { Socket } from "socket.io-client";
 import { Logger } from "../utils/Logger";
 
 const logger = Logger.getInstance();
@@ -13,12 +13,26 @@ const RoomPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const newSocket = initSocket();
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        disconnectSocket(newSocket);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchRoom = async () => {
+      if (!socket || !roomId) return;
+
       try {
         logger.info(`Fetching room: ${roomId}`);
-        const roomData = await getRoom(roomId!);
+        const roomData = await getRoom(roomId, socket);
         setRoom(roomData);
         setPlayers(roomData.players);
         setCurrentPlayerId(localStorage.getItem("playerId"));
@@ -34,33 +48,36 @@ const RoomPage: React.FC = () => {
     };
 
     fetchRoom();
-  }, [roomId]);
+  }, [roomId, socket]);
 
   useEffect(() => {
-    const socket = initSocket();
+    if (!socket || !roomId) return;
+
     const playerId = localStorage.getItem("playerId");
     logger.info(`Player ID is: ${playerId}`);
 
-    if (playerId && roomId) {
+    if (playerId) {
       socket.emit("joinRoom", roomId, playerId);
     }
-  }, [roomId]);
+  }, [roomId, socket]);
 
   useEffect(() => {
+    if (!socket || !roomId || !currentPlayerId) return;
+
     logger.info(`Attempting to subscribeToRoomUpdates: roomId = ${roomId}; currentPlayerId ${currentPlayerId}`);
-    if (roomId && currentPlayerId) {
-      subscribeToRoomUpdates(roomId, currentPlayerId, (updatedRoom) => {
-        setRoom(updatedRoom);
-        setPlayers(updatedRoom.players);
-        logger.info("Room change handled.");
-      });
-    }
-  }, [roomId, currentPlayerId]);
+    subscribeToRoomUpdates(roomId, currentPlayerId, (updatedRoom) => {
+      setRoom(updatedRoom);
+      setPlayers(updatedRoom.players);
+      logger.info("Room change handled.");
+    }, socket);
+  }, [roomId, currentPlayerId, socket]);
 
   const handleRemovePlayer = async (playerId: string) => {
+    if (!socket || !roomId) return;
+
     try {
       logger.info(`Attempting to remove player: ${playerId} from room: ${roomId}`);
-      await removePlayer(roomId!, playerId);
+      await removePlayer(roomId, playerId, socket);
     } catch (err) {
       if (err instanceof Error) {
         logger.error(`Error removing player: ${err.message}`);
@@ -132,7 +149,6 @@ const RoomPage: React.FC = () => {
   );
 };
 
-// Стили остаются без изменений
 const styles = {
   container: {
     padding: "20px",
