@@ -1,8 +1,10 @@
-// src/pages/RoomPage.tsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getRoom, subscribeToRoomUpdates, unsubscribeFromRoomUpdates, removePlayer } from "../services/api";
+import { getRoom, subscribeToRoomUpdates, removePlayer } from "../services/api";
 import { initSocket } from "../services/api";
+import { Logger } from "../utils/Logger";
+
+const logger = Logger.getInstance();
 
 const RoomPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -10,20 +12,22 @@ const RoomPage: React.FC = () => {
   const [players, setPlayers] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false); // Состояние для уведомления "Скопировано"
+  const [isCopied, setIsCopied] = useState(false);
 
-  // Загрузка данных о комнате при первом рендере
   useEffect(() => {
     const fetchRoom = async () => {
       try {
+        logger.info(`Fetching room: ${roomId}`);
         const roomData = await getRoom(roomId!);
         setRoom(roomData);
         setPlayers(roomData.players);
         setCurrentPlayerId(localStorage.getItem("playerId"));
       } catch (err) {
         if (err instanceof Error) {
+          logger.error(`Error fetching room: ${err.message}`);
           setError(err.message);
         } else {
+          logger.error("An unexpected error occurred while fetching room.");
           setError("An unexpected error occurred.");
         }
       }
@@ -32,61 +36,52 @@ const RoomPage: React.FC = () => {
     fetchRoom();
   }, [roomId]);
 
-  // Подключение к WebSocket
   useEffect(() => {
     const socket = initSocket();
     const playerId = localStorage.getItem("playerId");
-    console.log("player id is ", playerId);
+    logger.info(`Player ID is: ${playerId}`);
 
     if (playerId && roomId) {
-      socket.emit("joinRoom", roomId, playerId); // Отправляем playerId при подключении
+      socket.emit("joinRoom", roomId, playerId);
     }
-
-    return () => {
-      socket.disconnect();
-    };
   }, [roomId]);
 
-  // Подписка на обновления комнаты
   useEffect(() => {
-    if (roomId) {
-      subscribeToRoomUpdates(roomId, (updatedRoom) => {
+    logger.info(`Attempting to subscribeToRoomUpdates: roomId = ${roomId}; currentPlayerId ${currentPlayerId}`);
+    if (roomId && currentPlayerId) {
+      subscribeToRoomUpdates(roomId, currentPlayerId, (updatedRoom) => {
         setRoom(updatedRoom);
         setPlayers(updatedRoom.players);
-        console.log("room change handled");
+        logger.info("Room change handled.");
       });
     }
+  }, [roomId, currentPlayerId]);
 
-    return () => {
-      if (roomId) {
-        unsubscribeFromRoomUpdates(roomId);
-      }
-    };
-  }, [roomId]);
-
-  // Удаление игрока
   const handleRemovePlayer = async (playerId: string) => {
     try {
+      logger.info(`Attempting to remove player: ${playerId} from room: ${roomId}`);
       await removePlayer(roomId!, playerId);
     } catch (err) {
       if (err instanceof Error) {
+        logger.error(`Error removing player: ${err.message}`);
         setError(err.message);
       } else {
+        logger.error("An unexpected error occurred while removing player.");
         setError("An unexpected error occurred.");
       }
     }
   };
 
-  // Функция для копирования ссылки
   const copyLinkToClipboard = () => {
     const link = `${window.location.origin}/join/${roomId}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
-        setIsCopied(true); // Показываем уведомление "Скопировано"
-        setTimeout(() => setIsCopied(false), 2000); // Скрываем уведомление через 2 секунды
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
       })
       .catch(() => {
+        logger.error("Failed to copy link to clipboard.");
         setError("Failed to copy link to clipboard.");
       });
   };
@@ -109,9 +104,9 @@ const RoomPage: React.FC = () => {
           value={`${window.location.origin}/join/${room.id}`}
           readOnly
           style={styles.linkInput}
-          onClick={copyLinkToClipboard} // Копируем ссылку при клике
+          onClick={copyLinkToClipboard}
         />
-        {isCopied && <p style={styles.copiedText}>Copied!</p>} {/* Уведомление "Скопировано" */}
+        {isCopied && <p style={styles.copiedText}>Copied!</p>}
       </div>
       <div style={styles.playersContainer}>
         <h2>Players:</h2>
@@ -124,7 +119,7 @@ const RoomPage: React.FC = () => {
               }}
             >
               {player.username} (Seat {player.seatNumber}) {player.id === currentPlayerId && "(You)"}
-              {room.adminId === currentPlayerId && player.id !== currentPlayerId && ( // Кнопка удаления для админа
+              {room.adminId === currentPlayerId && player.id !== currentPlayerId && (
                 <button onClick={() => handleRemovePlayer(player.id)} style={styles.removeButton}>
                   Remove
                 </button>
@@ -137,6 +132,7 @@ const RoomPage: React.FC = () => {
   );
 };
 
+// Стили остаются без изменений
 const styles = {
   container: {
     padding: "20px",
@@ -152,7 +148,7 @@ const styles = {
     fontSize: "16px",
     borderRadius: "5px",
     border: "1px solid #ccc",
-    cursor: "pointer", // Курсор в виде указателя
+    cursor: "pointer",
   },
   playersContainer: {
     marginTop: "20px",

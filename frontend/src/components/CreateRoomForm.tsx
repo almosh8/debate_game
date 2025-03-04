@@ -1,8 +1,10 @@
-// src/components/CreateRoomForm.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createRoom } from "../services/api";
 import { Room } from "../domain/Room";
+import { Logger } from "../utils/Logger"
+
+const logger = Logger.getInstance();
 
 const CreateRoomForm: React.FC = () => {
   const [adminId, setAdminId] = useState("");
@@ -14,14 +16,17 @@ const CreateRoomForm: React.FC = () => {
     setError(null);
 
     try {
+      logger.info(`Attempting to create room with adminId: ${adminId}`);
       const room: Room = await createRoom(adminId);
-      //айди создателя комнаты
+      logger.info(`Room created successfully: ${room}`);
       localStorage.setItem("playerId", room.players[0].id);
       navigate(`/room/${room.id}`);
     } catch (err) {
       if (err instanceof Error) {
+        logger.error(`Error creating room: ${err.message}`);
         setError(err.message);
       } else {
+        logger.error("An unexpected error occurred while creating room.");
         setError("An unexpected error occurred.");
       }
     }
@@ -53,7 +58,7 @@ const CreateRoomForm: React.FC = () => {
   );
 };
 
-// Добавляем объект styles
+// Стили остаются без изменений
 const styles = {
   container: {
     display: "flex",

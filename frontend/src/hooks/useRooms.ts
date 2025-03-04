@@ -1,6 +1,8 @@
-// src/hooks/useRooms.ts
 import { useEffect, useState } from "react";
 import { getRooms } from "../services/api";
+import { Logger } from "../utils/Logger"
+
+const logger = Logger.getInstance();
 
 const useRooms = () => {
   const [rooms, setRooms] = useState<any[]>([]);
@@ -14,8 +16,10 @@ const useRooms = () => {
         setRooms(data);
       } catch (err) {
         if (err instanceof Error) {
+          logger.error(`Error fetching rooms: ${err.message}`);
           setError(err.message);
         } else {
+          logger.error("An unexpected error occurred while fetching rooms.");
           setError("An unexpected error occurred.");
         }
       } finally {

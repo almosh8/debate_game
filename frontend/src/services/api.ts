@@ -1,132 +1,124 @@
-// src/services/api.ts
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
+import { Logger } from "../utils/Logger"
+
+const logger = Logger.getInstance();
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
-console.log("API_BASE_URL:", API_BASE_URL);
+logger.info(`API_BASE_URL: ${API_BASE_URL}`);
 
-// Создание комнаты
 export const createRoom = async (adminId: string) => {
-  console.log("Creating room with adminId:", adminId);
+  logger.info(`Creating room with adminId: ${adminId}`);
   try {
     const response = await axios.post(`${API_BASE_URL}/rooms`, { adminId });
-    console.log("Room created successfully:", response.data);
+    logger.info(`Room created successfully: ${JSON.stringify(response.data)}`);
     return response.data;
   } catch (error) {
-    console.error("Error creating room:", error);
+    logger.error(`Error creating room: ${error}`);
     throw error;
   }
 };
 
-// Получение информации о комнате
 export const getRoom = async (roomId: string) => {
-  console.log("Fetching room:", roomId);
+  logger.info(`Fetching room: ${roomId}`);
   try {
     const response = await axios.get(`${API_BASE_URL}/rooms/${roomId}`);
-    console.log("Room fetched successfully:", response.data);
+    logger.info(`Room fetched successfully: ${JSON.stringify(response.data)}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching room:", error);
+    logger.error(`Error fetching room: ${error}`);
     throw error;
   }
 };
 
-// Получение списка комнат
 export const getRooms = async () => {
-  console.log("Fetching rooms...");
+  logger.info("Fetching rooms...");
   try {
     const response = await axios.get(`${API_BASE_URL}/rooms`);
-    console.log("Rooms fetched successfully:", response.data);
+    logger.info(`Rooms fetched successfully: ${JSON.stringify(response.data)}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching rooms:", error);
+    logger.error(`Error fetching rooms: ${error}`);
     throw error;
   }
 };
 
-// Получение занятых мест
 export const getOccupiedSeats = async (roomId: string) => {
-  console.log("Fetching occupied seats for room:", roomId);
+  logger.info(`Fetching occupied seats for room: ${roomId}`);
   try {
-    const room = await getRoom(roomId); // Используем getRoom для получения данных о комнате
-    const occupiedSeats = room.players.map((player: any) => player.seatNumber); // Извлекаем занятые места
-    console.log("Occupied seats fetched successfully:", occupiedSeats);
+    const room = await getRoom(roomId);
+    const occupiedSeats = room.players.map((player: any) => player.seatNumber);
+    logger.info(`Occupied seats fetched successfully: ${occupiedSeats}`);
     return occupiedSeats;
   } catch (error) {
-    console.error("Error fetching occupied seats:", error);
+    logger.error(`Error fetching occupied seats: ${error}`);
     throw error;
   }
 };
 
-// Присоединение к комнате
 export const joinRoom = async (roomId: string, username: string, seatNumber: number) => {
-  console.log("Joining room:", roomId, "with username:", username, "seat:", seatNumber);
+  logger.info(`Joining room: ${roomId} with username: ${username} and seat: ${seatNumber}`);
   try {
     const response = await axios.post(`${API_BASE_URL}/rooms/${roomId}/join`, { username, seatNumber });
-    console.log("Joined room successfully:", response.data);
+    logger.info(`Joined room successfully: ${JSON.stringify(response.data)}`);
     return response.data;
   } catch (error) {
-    console.error("Error joining room:", error);
+    logger.error(`Error joining room: ${error}`);
     throw error;
   }
 };
 
-// Удаление игрока из комнаты
 export const removePlayer = async (roomId: string, playerId: string) => {
-  console.log("Removing player:", playerId, "from room:", roomId);
+  logger.info(`Removing player: ${playerId} from room: ${roomId}`);
   try {
     const response = await axios.post(`${API_BASE_URL}/rooms/${roomId}/removePlayer`, { playerId });
-    console.log("Player removed successfully:", response.data);
+    logger.info(`Player removed successfully: ${JSON.stringify(response.data)}`);
     return response.data;
   } catch (error) {
-    console.error("Error removing player:", error);
+    logger.error(`Error removing player: ${error}`);
     throw error;
   }
 };
 
-// Инициализация WebSocket
 let socket: Socket | null = null;
 
 export const initSocket = () => {
   if (!socket || !socket.connected) {
     socket = io(API_BASE_URL);
-    console.log("WebSocket connected");
+    logger.info("WebSocket connected");
   }
   return socket;
 };
 
-// Подписка на обновления комнаты
-export const subscribeToRoomUpdates = (roomId: string, callback: (room: any) => void) => {
+export const subscribeToRoomUpdates = (roomId: string, playerId: string, callback: (room: any) => void) => {
+  if(!roomId || !playerId) return;
+  
   const socket = initSocket();
-  socket.emit("joinRoom", roomId);
   socket.on("roomUpdated", callback);
-  console.log("Subscribed to room updates:", roomId);
+  logger.info(`Subscribed to room updates: ${roomId}`);
 
-  // Обработка ошибок
   socket.on("connect_error", (err) => {
-    console.error("Connection error:", err);
+    logger.error(`Connection error: ${err}`);
   });
 
   socket.on("error", (err) => {
-    console.error("WebSocket error:", err);
+    logger.error(`WebSocket error: ${err}`);
   });
 };
 
-// Отписка от обновлений комнаты
 export const unsubscribeFromRoomUpdates = (roomId: string) => {
   if (socket) {
     socket.off("roomUpdated");
     socket.emit("leaveRoom", roomId);
-    console.log("Unsubscribed from room updates:", roomId);
+    logger.info(`Unsubscribed from room updates: ${roomId}`);
   }
 };
 
-// Отключение WebSocket
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
-    console.log("WebSocket disconnected");
+    logger.info("WebSocket disconnected");
   }
 };

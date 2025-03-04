@@ -1,28 +1,31 @@
-// src/pages/JoinRoomPage.tsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoomUpdates } from "../services/api";
 import { Room } from "../domain/Room";
-import { Player } from "../domain/Player";
+import { Logger } from "../utils/Logger"
+
+const logger = Logger.getInstance();
 
 const JoinRoomPage: React.FC = () => {
-  const { roomId } = useParams<{ roomId: string }>(); // Извлекаем roomId из URL
+  const { roomId } = useParams<{ roomId: string }>();
   const [username, setUsername] = useState("");
   const [seatNumber, setSeatNumber] = useState<number | null>(null);
   const [occupiedSeats, setOccupiedSeats] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Загрузка занятых мест при первом рендере
   useEffect(() => {
     const fetchOccupiedSeats = async () => {
       try {
+        logger.info(`Fetching occupied seats for room: ${roomId}`);
         const seats = await getOccupiedSeats(roomId!);
         setOccupiedSeats(seats);
       } catch (err) {
         if (err instanceof Error) {
+          logger.error(`Error fetching occupied seats: ${err.message}`);
           setError(err.message);
         } else {
+          logger.error("An unexpected error occurred while fetching occupied seats.");
           setError("An unexpected error occurred.");
         }
       }
@@ -31,19 +34,12 @@ const JoinRoomPage: React.FC = () => {
     fetchOccupiedSeats();
   }, [roomId]);
 
-  // Подписка на обновления комнаты
   useEffect(() => {
     if (roomId) {
-      subscribeToRoomUpdates(roomId, (updatedRoom) => {
+      subscribeToRoomUpdates("penging_" + roomId, "pending", (updatedRoom) => {
         setOccupiedSeats(updatedRoom.players.map((player: any) => player.seatNumber));
       });
     }
-
-    return () => {
-      if (roomId) {
-        unsubscribeFromRoomUpdates(roomId);
-      }
-    };
   }, [roomId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,18 +47,23 @@ const JoinRoomPage: React.FC = () => {
     setError(null);
 
     if (!seatNumber) {
+      logger.warn("No seat number selected.");
       setError("Please select a seat");
       return;
     }
 
     try {
+      logger.info(`Attempting to join room: ${roomId} with username: ${username} and seat: ${seatNumber}`);
+      unsubscribeFromRoomUpdates(roomId!);
       const room: Room = await joinRoom(roomId!, username, seatNumber);
       localStorage.setItem("playerId", (room.players.find(player => player.username === username))?.id || "none");
-      navigate(`/room/${roomId}`); // Перенаправляем на страницу комнаты
+      navigate(`/room/${roomId}`);
     } catch (err) {
       if (err instanceof Error) {
+        logger.error(`Error joining room: ${err.message}`);
         setError(err.message);
       } else {
+        logger.error("An unexpected error occurred while joining room.");
         setError("An unexpected error occurred.");
       }
     }
@@ -95,7 +96,7 @@ const JoinRoomPage: React.FC = () => {
             onChange={(e) => setSeatNumber(Number(e.target.value))}
             required
             style={styles.input}
-            disabled={occupiedSeats.length === 7} // Если все места заняты, блокируем выбор
+            disabled={occupiedSeats.length === 7}
           >
             <option value="" disabled>
               Select a seat
@@ -116,6 +117,7 @@ const JoinRoomPage: React.FC = () => {
   );
 };
 
+// Стили остаются без изменений
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     padding: "20px",

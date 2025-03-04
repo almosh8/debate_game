@@ -19,12 +19,14 @@ export class RemovePlayerUseCase {
     }
 
     // Удаляем игрока
-    room.removePlayer(playerId);
+    
+    const updatedPlayers = room.players.filter(player => player.id !== playerId);
+    const newRoom = new Room(room.id, room.adminId, updatedPlayers, room.status);
 
     // Сохраняем обновленную комнату
-    await this.roomRepository.save(room);
+    await this.roomRepository.save(newRoom);
 
     this.logger.info(`Player removed: ${playerId}`);
-    return room;
+    return newRoom;
   }
 }

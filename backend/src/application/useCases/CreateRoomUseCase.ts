@@ -16,8 +16,9 @@ export class CreateRoomUseCase {
     this.logger.info(`Attempt to create room by IP: ${userIP}`);
 
     // Создаем комнату с админом на Seat 1
-    const room = new Room(uuid(), adminId, [], "waiting");
-    const adminPlayer = new Player(uuid(), adminId, "admin", 1); // Админ на Seat 1
+    const uid = uuid();
+    const room = new Room(uuid(), uid, [], "waiting");
+    const adminPlayer = new Player(uid, adminId, "admin", 1); // Админ на Seat 1
     room.players.push(adminPlayer);
 
     await this.roomRepository.save(room);

@@ -1,7 +1,6 @@
 // src/application/useCases/RoomUseCase.ts
 import { IWebSocketClient } from "../interfaces/IWebSocketClient";
 import { Room } from "../../domain/Room";
-import { Player } from "../../domain/Player";
 import { IRoomRepository } from "../interfaces/IRoomRepository";
 import { v4 as uuid } from "uuid";
 

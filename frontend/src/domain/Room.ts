@@ -1,5 +1,4 @@
 // src/domain/Room.ts
-
 import { Player } from "./Player";
 
 export class Room {
@@ -10,8 +9,4 @@ export class Room {
         public readonly status: "waiting" | "in_progress" | "finished"
     ) {}
 
-    // Correctly implement the removePlayer method
-    removePlayer(playerId: string): Player[] {
-        return this.players.filter((player) => player.id !== playerId);
-    }
 }
