@@ -1,12 +1,55 @@
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { Logger } from "../utils/Logger";
+import { Player } from "../domain/Player";
+import { Room } from "../domain/Room";
 
 const logger = Logger.getInstance();
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 logger.info(`API_BASE_URL: ${API_BASE_URL}`);
+
+export const fetchRoomData = async (roomId: string): Promise<Game> => {
+  // Фиктивные данные для тестов
+  const players: Player[] = [
+    new Player("player1", "Игрок1", "admin", [], 1),
+    new Player("player2", "Игрок2", "participant", [], 2),
+    new Player("player3", "Игрок3", "participant", [], 3),
+    new Player("player4", "Игрок4", "participant", [], 4),
+    new Player("player5", "Игрок5", "participant", [], 5),
+    new Player("player6", "Игрок6", "participant", [], 6),
+    new Player("player7", "Судья", "participant", [], 7),
+  ];
+
+  // Фиктивные карты
+  const cards: Card[] = [
+    new Card("good1", "good", "Малыш", "Невинный ребёнок.", "https://game.com/cards/good1.png"),
+    new Card("bad1", "bad", "Вор", "Крал у бедных.", "https://game.com/cards/bad1.png"),
+    new Card("secret1", "secret", "Мим-убийца", "Кажется безобидным.", "https://game.com/cards/secret1.png"),
+  ];
+
+  // Распределяем карты по игрокам
+  players[0].cards.push(cards[0]); // Игрок1 получает карту "Малыш"
+  players[1].cards.push(cards[1]); // Игрок2 получает карту "Вор"
+  players[2].cards.push(cards[2]); // Игрок3 получает карту "Мим-убийца"
+
+  // Создаём фиктивную игру
+  const game = new Game(
+    "game123", // ID игры
+    roomId, // ID комнаты
+    1, // Текущий раунд
+    players, // Список игроков
+    "player7", // ID текущего судьи
+    [cards[0]], // Карты на левом пути
+    [cards[1]] // Карты на правом пути
+  );
+
+  // Имитируем задержку сети
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  return game;
+};
 
 export const createRoom = async (adminId: string) => {
   logger.info(`Creating room with adminId: ${adminId}`);

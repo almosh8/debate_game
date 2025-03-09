@@ -1,7 +1,7 @@
 // src/tests/unit/CreateRoomForm.test.tsx
 import React from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
-import CreateRoomForm from "../../components/CreateRoomForm";
+import CreateRoomForm from "../../pages/CreateRoomForm";
 import { createRoom } from "../../services/api";
 
 jest.mock("../../services/api");
