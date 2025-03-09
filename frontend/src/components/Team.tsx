@@ -1,22 +1,19 @@
 import React from "react";
 import PlayerSlot from "./PlayerSlot";
-
-interface Player {
-  id: string;
-  username: string;
-  cards: any[];
-}
+import { Player } from "../domain/Player";
+import { Card } from "../domain/Card";
 
 interface TeamProps {
   players: Player[];
+  path: (Card | null)[];
   position: "top" | "bottom";
 }
 
-const Team: React.FC<TeamProps> = ({ players, position }) => {
+const Team: React.FC<TeamProps> = ({ players, path, position }) => {
   return (
     <div className={`team ${position}`}>
-      {players.map((player) => (
-        <PlayerSlot key={player.id} player={player} />
+      {players.map((player, index) => (
+        <PlayerSlot key={player.id} player={player} card={path[index]} />
       ))}
     </div>
   );

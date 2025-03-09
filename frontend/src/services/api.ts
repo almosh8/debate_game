@@ -30,6 +30,8 @@ export const fetchRoomData = async (roomId: string): Promise<Game> => {
     new Card("secret1", "secret", "Мим-убийца", "Кажется безобидным.", "https://game.com/cards/secret1.png"),
   ];
 
+  // Распределяем карты по игрокам
+
   // Создаём фиктивную игру
   const game = new Game(
     "game123", // ID игры
@@ -38,7 +40,7 @@ export const fetchRoomData = async (roomId: string): Promise<Game> => {
     players, // Список игроков
     "player7", // ID текущего судьи
     [cards[0]], // Карты на левом пути
-    [cards[1]] // Карты на правом пути
+    [cards[1], cards[2]] // Карты на правом пути
   );
 
   // Имитируем задержку сети

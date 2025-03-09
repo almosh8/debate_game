@@ -1,20 +1,21 @@
 import React from "react";
+import { Player } from "../domain/Player";
+import { Card } from "../domain/Card";
 
-interface Player {
-  id: string;
-  username: string;
-  cards: any[];
+interface PlayerSlotProps {
+  player: Player;
+  card: Card | null;
 }
 
-const PlayerSlot: React.FC<{ player: Player }> = ({ player }) => {
+const PlayerSlot: React.FC<PlayerSlotProps> = ({ player, card }) => {
   return (
     <div className="player-slot">
       <div className="player-info">
         <span>{player.username}</span>
       </div>
       <div className="card-slot">
-        {player.cards.length > 0 ? (
-          <img src={player.cards[0].imageUrl} alt={player.cards[0].name} />
+        {card ? (
+          <img src={card.imageUrl} alt={card.name} className="card-image" />
         ) : (
           <div className="empty-slot">Пустой слот</div>
         )}

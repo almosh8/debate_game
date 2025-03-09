@@ -12,8 +12,8 @@ export default class Game {
     public round: number, // Текущий раунд
     public players: Player[], // Список игроков
     public currentJudgeId: string, // ID текущего судьи
-    public path1: Card[] = [], // Карты на левом пути
-    public path2: Card[] = [] // Карты на правом пути
+    public path1: (Card | null)[] = [], // Карты на левом пути
+    public path2: (Card | null)[] = [] // Карты на правом пути
   ) {
     // Вычисляем команды при создании объекта
     const judgeIndex = this.players.findIndex((p) => p.id === this.currentJudgeId);
