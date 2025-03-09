@@ -1,0 +1,79 @@
+/* Основной контейнер стола */
+.game-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    padding: 20px;
+    background-color: #f0f0f0;
+    position: relative;
+  }
+  
+  /* Команды */
+  .team {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
+  
+  .team.top {
+    align-items: flex-start;
+  }
+  
+  .team.bottom {
+    align-items: flex-end;
+  }
+  
+  /* Слот игрока */
+  .player-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+  }
+  
+  .player-info {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .card-slot {
+    width: 100px;
+    height: 150px;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .card-slot:hover {
+    transform: scale(1.05);
+  }
+  
+  .empty-slot {
+    color: #999;
+    font-size: 14px;
+  }
+  
+  /* Судья */
+  .judge {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .judge-info {
+    font-size: 18px;
+    font-weight: bold;
+  }

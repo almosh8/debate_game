@@ -2,9 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import GameTable from "../components/GameTable";
 import Game from "../domain/Game";
-//import { fetchRoomData } from "./services/api"; // Импорт функции для запроса к API
+import { fetchRoomData } from "../services/api";
+import { Logger } from "../utils/Logger";
 
 const GamePage: React.FC = () => {
+
+  const logger = Logger.getInstance()
+
     const { roomId } = useParams<{ roomId: string }>();
 
   const [gameData, setGameData] = useState<Game | null>(null);
@@ -14,10 +18,17 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     const loadRoomData = async () => {
       try {
-        const data = await fetchRoomData(roomId); // Запрос к API
+        const data: Game = await fetchRoomData('TEST'); // Запрос к API
         setGameData(data);
       } catch (err) {
-        setError("Ошибка при загрузке данных комнаты");
+
+        if (err instanceof Error) {
+          logger.error(`Error creating room: ${err.message}`);
+          setError(err.message);
+        } else {
+          logger.error("An unexpected error occurred while creating room.");
+          setError("An unexpected error occurred.");
+        }
       } finally {
         setLoading(false);
       }

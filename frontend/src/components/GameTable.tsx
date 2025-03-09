@@ -16,6 +16,7 @@ interface Game {
 
 const GameTable: React.FC<{ game: Game }> = ({ game }) => {
   return (
+
     <div className="game-table">
       {/* Команда 1 (верхняя часть экрана) */}
       <Team players={game.team1} position="top" />
