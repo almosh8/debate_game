@@ -5,7 +5,7 @@
     align-items: center;
     justify-content: space-between;
     height: 100vh;
-    padding: 20px;
+    padding: 0px;
     background-color: #f0f0f0;
     position: relative;
   }
@@ -40,7 +40,7 @@
   }
   
   .card-slot {
-    width: 100px;
+    width: 210px;
     height: 150px;
     border: 2px dashed #ccc;
     display: flex;
@@ -49,6 +49,13 @@
     background-color: #fff;
     cursor: pointer;
     transition: transform 0.2s;
+    overflow: hidden; /* Ensure the image doesn't overflow the container */
+  }
+
+  .card-slot img {
+      width: 100%; /* Make the image fill the width of the container */
+      height: 100%; /* Make the image fill the height of the container */
+      object-fit: cover; /* Ensure the image covers the entire area without distorting */
   }
   
   .card-slot:hover {

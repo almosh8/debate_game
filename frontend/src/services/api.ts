@@ -25,9 +25,9 @@ export const fetchRoomData = async (roomId: string): Promise<Game> => {
 
   // Фиктивные карты
   const cards: Card[] = [
-    new Card("good1", "good", "Малыш", "Невинный ребёнок.", "https://game.com/cards/good1.png"),
-    new Card("bad1", "bad", "Вор", "Крал у бедных.", "https://game.com/cards/bad1.png"),
-    new Card("secret1", "secret", "Мим-убийца", "Кажется безобидным.", "https://game.com/cards/secret1.png"),
+    new Card("good1", "good", "Малыш", "Невинный ребёнок.", "/good/1.jpg"),
+    new Card("bad1", "bad", "Вор", "Крал у бедных.", "/good/2.jpg"),
+    new Card("secret1", "secret", "Мим-убийца", "Кажется безобидным.", "/bad/222.jpg"),
   ];
 
   // Распределяем карты по игрокам
