@@ -6,7 +6,8 @@ export class Player {
     public readonly id: string,
     public readonly username: string,
     public readonly role: "admin" | "participant",
-    public readonly seatNumber: number, // Добавляем seatNumber
-    public readonly cards: Card[]
+    public readonly seatNumber: number,
+    public readonly cards: Card[],
+    public readonly color: string // Добавляем поле color
   ) {}
 }

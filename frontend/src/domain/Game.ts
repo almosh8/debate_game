@@ -1,5 +1,13 @@
+// src/domain/Game.ts
 import { Player } from "./Player";
 import { Card } from "./Card";
+
+export type GameStage = 
+  | "card_selection" 
+  | "initial_argumentation" 
+  | "team_discussion" 
+  | "judge_speech" 
+  | "final_decision";
 
 export default class Game {
   public team1: Player[]; // Команда 1
@@ -7,17 +15,21 @@ export default class Game {
   public judge: Player;
 
   constructor(
-    public id: string, // Уникальный идентификатор игры
-    public roomId: string, // Идентификатор комнаты
-    public round: number, // Текущий раунд
-    public players: Player[], // Список игроков
-    public currentJudgeId: string, // ID текущего судьи
-    public path1: (Card | null)[] = [], // Карты на левом пути
-    public path2: (Card | null)[] = [] // Карты на правом пути
+    public id: string,
+    public roomId: string,
+    public round: number,
+    public players: Player[],
+    public currentJudgeId: string,
+    public path1: (Card | null)[] = [],
+    public path2: (Card | null)[] = [],
+    public currentTurn: {
+      seatNumber: number;
+      stage: GameStage;
+    } | null = null,
+    public timer: number = 0
   ) {
-    // Вычисляем команды при создании объекта
     const judgeIndex = this.players.findIndex((p) => p.id === this.currentJudgeId);
-    this.judge = this.players[judgeIndex]
+    this.judge = this.players[judgeIndex];
     this.team1 = [];
     this.team2 = [];
 
