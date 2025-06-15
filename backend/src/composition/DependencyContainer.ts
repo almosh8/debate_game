@@ -12,7 +12,6 @@ import { Logger } from "../utils/Logger";
 import { LevelDBClient } from "../infrastructure/LevelDBClient";
 import { Server } from "socket.io";
 import { SocketHandler } from "../presentation/socketHandler";
-import { WebSocketClient } from "../infrastructure/WebSocketClient";
 import { GameServiceClient } from "../infrastructure/GameServiceClient";
 
 export class DependencyContainer {
@@ -32,35 +31,33 @@ export class DependencyContainer {
   constructor(private io: Server) {
     this.logger.info("Initializing dependencies...");
 
-    // Инициализация клиентов базы данных
+    // Initialize database clients
     this.db = new LevelDBClient();
     
-    // Инициализация репозиториев
+    // Initialize repositories
     this.roomRepository = new RoomRepository(this.db);
 
-    // Инициализация клиентов сервисов
-    const webSocketClient = new WebSocketClient("http://localhost:5000");
+    // Initialize service clients
     const gameServiceClient = new GameServiceClient();
 
-    // Инициализация use cases
+    // Initialize use cases
     this.createRoomUseCase = new CreateRoomUseCase(this.roomRepository);
     this.getRoomUseCase = new GetRoomUseCase(this.roomRepository);
     this.joinRoomUseCase = new JoinRoomUseCase(this.roomRepository);
     this.removePlayerUseCase = new RemovePlayerUseCase(this.roomRepository);
     this.startGameUseCase = new StartGameUseCase(
       this.roomRepository,
-      gameServiceClient,
-      webSocketClient
+      gameServiceClient
     );
 
-    // Инициализация обработчика сокетов
+    // Initialize socket handler
     this.socketHandler = new SocketHandler(
       this.io, 
       this.removePlayerUseCase,
       this.startGameUseCase
     );
 
-    // Инициализация контроллеров
+    // Initialize controllers
     this.roomController = new RoomController(
       this.createRoomUseCase,
       this.getRoomUseCase,
@@ -70,7 +67,12 @@ export class DependencyContainer {
     );
     
     this.getRoomController = new GetRoomController(this.getRoomUseCase);
-    this.gameController = new GameController(this.startGameUseCase);
+    
+    // Updated GameController initialization with socketHandler
+    this.gameController = new GameController(
+      this.startGameUseCase,
+      this.socketHandler
+    );
 
     this.logger.info("Dependencies initialized successfully");
   }

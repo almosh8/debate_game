@@ -1,11 +1,15 @@
 import { Request, Response } from "express";
 import { StartGameUseCase } from "../../application/useCases/StartGameUseCase";
 import { Logger } from "../../utils/Logger";
+import { SocketHandler } from "../socketHandler";
 
 export class GameController {
   private logger: Logger = Logger.getInstance();
 
-  constructor(private startGameUseCase: StartGameUseCase) {
+  constructor(
+    private startGameUseCase: StartGameUseCase,
+    private socketHandler: SocketHandler
+  ) {
     this.logger.info("GameController initialized");
   }
 
@@ -18,6 +22,8 @@ export class GameController {
       const result = await this.startGameUseCase.execute(roomId);
       
       if (result.success) {
+        // Emit room update to all clients
+        this.socketHandler.emitRoomUpdate(roomId, result.room);
         res.status(200).json({ success: true });
       } else {
         res.status(400).json({ success: false, error: result.error });

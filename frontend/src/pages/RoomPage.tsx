@@ -222,6 +222,7 @@ const RoomPage: React.FC = () => {
       setRoom(updatedRoom);
       setPlayers(updatedRoom.players);
       logger.info("Room change handled.");
+      console.log(updatedRoom)
     }, socket);
     
     return () => {
@@ -288,6 +289,10 @@ const RoomPage: React.FC = () => {
 
   const isAdmin = room.adminId === currentPlayerId;
   const canStartGame = isAdmin && players.length >= 3 && room.status === 'waiting';
+
+  if(room.status === "entering") {
+    navigate(`/game/${room.roomId}`) //roomId the same as gameId
+  }
 
   return (
     <div style={styles.container}>

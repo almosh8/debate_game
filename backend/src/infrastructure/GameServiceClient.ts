@@ -36,10 +36,5 @@ export class GameServiceClient {
     return game;
   }
 
-  async startRound(gameId: string): Promise<Game> {
-    logger.info(`Starting new round for game: ${gameId}`);
-    // Здесь будет логика начала нового раунда
-    // Пока возвращаем заглушку
-    throw new Error("Not implemented yet");
-  }
+
 }

@@ -12,25 +12,25 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Разрешить все источники (для разработки)
+    origin: "*", // Allow all origins (for development)
   },
 });
 
 app.use(cors());
 app.use(express.json());
 
-// Инициализация зависимостей
+// Initialize dependencies
 const container = new DependencyContainer(io);
 const roomController = container._getRoomController();
 const gameController = container.getGameController();
 const removePlayerUseCase = container.getRemovePlayerUseCase();
 const startGameUseCase = container.getStartGameUseCase();
 
-// Инициализация обработчика сокетов
+// Initialize socket handler
 const socketHandler = new SocketHandler(io, removePlayerUseCase, startGameUseCase);
 socketHandler.initialize();
 
-// Роуты
+// Routes
 app.post("/rooms", (req, res) => roomController.createRoom(req, res));
 app.get("/rooms/:roomId", (req, res) => roomController.getRoom(req, res));
 app.post("/rooms/:roomId/join", (req, res) => roomController.joinRoom(req, res));

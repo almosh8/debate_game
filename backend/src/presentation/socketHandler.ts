@@ -31,10 +31,8 @@ export class SocketHandler {
       socket.on("startGame", async (roomId: string) => {
         logger.info(`Start game requested for room: ${roomId}`);
         try {
-          const result = await this.startGameUseCase.execute(roomId);
-          if (result.success) {
-            this.emitRoomUpdate(roomId, { status: "starting" });
-          }
+          await this.startGameUseCase.execute(roomId);
+          
         } catch (error) {
           logger.error(`Error starting game: ${error}`);
         }

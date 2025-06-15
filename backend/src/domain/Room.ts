@@ -6,7 +6,9 @@ export class Room {
         public readonly id: string,
         public readonly adminId: string,
         public readonly players: Player[],
-        public status: "waiting" | "in_progress" | "starting"
+        public status: "waiting" | "in_progress" | "starting" 
+        | "entering" //activate redirect to the game page
+
     ) {}
 
 }
