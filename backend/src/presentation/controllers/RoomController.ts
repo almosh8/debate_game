@@ -1,4 +1,3 @@
-// src/presentation/controllers/RoomController.ts
 import { Request, Response } from "express";
 import { CreateRoomUseCase } from "../../application/useCases/CreateRoomUseCase";
 import { GetRoomUseCase } from "../../application/useCases/GetRoomUseCase";
@@ -14,7 +13,7 @@ export class RoomController {
     private createRoomUseCase: CreateRoomUseCase,
     private getRoomUseCase: GetRoomUseCase,
     private joinRoomUseCase: JoinRoomUseCase,
-    private removePlayerUseCase: RemovePlayerUseCase, // Добавляем RemovePlayerUseCase
+    private removePlayerUseCase: RemovePlayerUseCase,
     private socketHandler: SocketHandler
   ) {
     this.logger.info("RoomController initialized");
@@ -28,7 +27,7 @@ export class RoomController {
 
     try {
       const room = await this.createRoomUseCase.execute(adminId, userIP);
-      this.socketHandler.emitRoomUpdate(room.id, room); // Отправляем обновление через WebSocket
+      this.socketHandler.emitRoomUpdate(room.id, room);
       res.status(201).json(room);
       this.logger.info(`Room created successfully: ${room.id}`);
     } catch (error) {
@@ -68,7 +67,7 @@ export class RoomController {
 
     try {
       const room = await this.joinRoomUseCase.execute(roomId, username, seatNumber);
-      this.socketHandler.emitRoomUpdate(room.id, room); // Отправляем обновление через WebSocket
+      this.socketHandler.emitRoomUpdate(room.id, room);
       res.status(200).json(room);
       this.logger.info(`User joined room successfully: ${roomId}`);
     } catch (error) {
@@ -89,7 +88,7 @@ export class RoomController {
 
     try {
       const room = await this.removePlayerUseCase.execute(roomId, playerId);
-      this.socketHandler.emitRoomUpdate(room.id, room); // Отправляем обновление через WebSocket
+      this.socketHandler.emitRoomUpdate(room.id, room);
       res.status(200).json(room);
       this.logger.info(`Player removed successfully: ${playerId}`);
     } catch (error) {

@@ -1,4 +1,3 @@
-// src/presentation/server.ts
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -23,10 +22,12 @@ app.use(express.json());
 // Инициализация зависимостей
 const container = new DependencyContainer(io);
 const roomController = container._getRoomController();
-const removePlayerUseCase = container.getRemovePlayerUseCase(); // Используем RemovePlayerUseCase
+const gameController = container.getGameController();
+const removePlayerUseCase = container.getRemovePlayerUseCase();
+const startGameUseCase = container.getStartGameUseCase();
 
 // Инициализация обработчика сокетов
-const socketHandler = new SocketHandler(io, removePlayerUseCase);
+const socketHandler = new SocketHandler(io, removePlayerUseCase, startGameUseCase);
 socketHandler.initialize();
 
 // Роуты
@@ -34,6 +35,7 @@ app.post("/rooms", (req, res) => roomController.createRoom(req, res));
 app.get("/rooms/:roomId", (req, res) => roomController.getRoom(req, res));
 app.post("/rooms/:roomId/join", (req, res) => roomController.joinRoom(req, res));
 app.post("/rooms/:roomId/removePlayer", (req, res) => roomController.removePlayer(req, res));
+app.post("/rooms/:roomId/start", (req, res) => gameController.startGame(req, res));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

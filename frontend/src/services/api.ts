@@ -14,20 +14,19 @@ logger.info(`API_BASE_URL: ${API_BASE_URL}`);
 export const fetchRoomData = async (roomId: string): Promise<Game> => {
   // Фиктивные данные для тестов
   const players: Player[] = [
-  new Player("player1", "Игрок1", "admin", 1, [], "#FF5252"), // Красный
-  new Player("player2", "Игрок2", "participant", 2, [], "#4CAF50"), // Зеленый
-  new Player("player3", "Игрок3", "participant", 3, [], "#2196F3"), // Синий
-  new Player("player4", "Игрок4", "participant", 4, [], "#FFC107"), // Желтый
-  new Player("player5", "Игрок5", "participant", 5, [], "#9C27B0"), // Фиолетовый
-  new Player("player6", "Игрок6", "participant", 6, [], "#00BCD4"), // Голубой
-  new Player("player7", "Судья", "participant", 7, [], "#FF9800"), // Оранжевый
-];
+    new Player("player1", "Игрок1", "admin", 1, [], "#FF5252"), // Красный
+    new Player("player2", "Игрок2", "participant", 2, [], "#4CAF50"), // Зеленый
+    new Player("player3", "Игрок3", "participant", 3, [], "#2196F3"), // Синий
+    new Player("player4", "Игрок4", "participant", 4, [], "#FFC107"), // Желтый
+    new Player("player5", "Игрок5", "participant", 5, [], "#9C27B0"), // Фиолетовый
+    new Player("player6", "Игрок6", "participant", 6, [], "#00BCD4"), // Голубой
+    new Player("player7", "Судья", "participant", 7, [], "#FF9800"), // Оранжевый
+  ];
 
   // Фиктивные карты
   const cardsTop: Card[] = [
     new Card("good1", "good", "Малыш", "Невинный ребёнок.", "/good/1.jpg"),
     new Card("bad1", "bad", "Вор", "Крал у бедных.", "/bad/221.jpg"),
-    
   ];
 
   const cardsBottom: Card[] = [
@@ -38,8 +37,6 @@ export const fetchRoomData = async (roomId: string): Promise<Game> => {
       playedOn: "good1" // Указываем, что эта карта сыграна на карту good1
     }), "/secrets/342.jpg"),
   ];
-
-  // Распределяем карты по игрокам
 
   // Создаём фиктивную игру
   const game = new Game(
@@ -136,9 +133,44 @@ export const removePlayer = async (roomId: string, playerId: string, socket: Soc
   }
 };
 
+export const startGame = async (roomId: string, socket: Socket): Promise<{ success: boolean; error?: string }> => {
+  logger.info(`Starting game for room: ${roomId}`);
+  try {
+    const response = await axios.post(`${API_BASE_URL}/rooms/${roomId}/start`);
+    
+    if (response.data.success && socket) {
+      socket.emit('startGame', roomId);
+    }
+    
+    return response.data;
+  } catch (error: any) {
+    logger.error(`Error starting game: ${error.message}`);
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Failed to start game'
+    };
+  }
+};
+
 export const initSocket = () => {
-  const socket = io(API_BASE_URL);
-  logger.info("WebSocket connected");
+  const socket = io(API_BASE_URL, {
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+  });
+
+  socket.on('connect', () => {
+    logger.info("WebSocket connected");
+  });
+
+  socket.on('disconnect', () => {
+    logger.info("WebSocket disconnected");
+  });
+
+  socket.on('connect_error', (err) => {
+    logger.error(`Connection error: ${err}`);
+  });
+
   return socket;
 };
 
@@ -169,6 +201,5 @@ export const disconnectSocket = (socket: Socket) => {
   if (socket) {
     socket.disconnect();
     logger.info("WebSocket disconnected");
-    console.trace();
   }
 };

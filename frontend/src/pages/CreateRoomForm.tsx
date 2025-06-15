@@ -10,8 +10,6 @@ const CreateRoomForm: React.FC = () => {
   const [adminId, setAdminId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  navigate('/game/test')
-  // TODO REMOVE AFTER GAME IS READY
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
