@@ -21,8 +21,9 @@ export class GameController {
     try {
       const result = await this.startGameUseCase.execute(roomId);
       
-      if (result.success) {
+      if (result.success && result.room) {
         // Emit room update to all clients
+        result.room.status = "entering"
         this.socketHandler.emitRoomUpdate(roomId, result.room);
         res.status(200).json({ success: true });
       } else {

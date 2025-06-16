@@ -50,10 +50,8 @@ export class StartGameUseCase {
       logger.info(`Game created successfully for room: ${roomId}, gameId: ${game.id}`);
 
       // 5. Update room with game ID and new status
-      
+      room.status = "starting";
       await this.roomRepository.save(room);
-      room.status = "entering";
-
       logger.info(`Game started successfully for room: ${roomId}`);
       return { 
         success: true, 
