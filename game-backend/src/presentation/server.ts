@@ -4,65 +4,39 @@ import { Server } from "socket.io";
 import { DependencyContainer } from "../composition/DependencyContainer";
 import dotenv from "dotenv";
 import cors from "cors";
-import { GameSocketHandler } from "../infrastructure/web/GameSocketHandler";
-import { Logger } from "../utils/Logger";
+import { SocketHandler } from "./socketHandler";
 
-const logger = Logger.getInstance();
 dotenv.config();
 
 const app = express();
 const server = createServer(app);
-
-// Настройка Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "*",
-    methods: ["GET", "POST"],
-    credentials: true
+    origin: "*", // Allow all origins (for development)
   },
-  connectionStateRecovery: {
-    maxDisconnectionDuration: 2 * 60 * 1000, // 2 минуты
-    skipMiddlewares: true
-  }
 });
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors());
 app.use(express.json());
 
-// Инициализация зависимостей
-const container = new DependencyContainer();
-const gameController = container.getGameController();
-const fetchGameUseCase = container.getFetchGameUseCase();
-const joinGameUseCase = container.getJoinGameUseCase();
+// Initialize dependencies
+const container = new DependencyContainer(io);
+const gameController = container._getGameController();
+const removePlayerUseCase = container.getRemovePlayerUseCase();
+const startGameUseCase = container.getStartGameUseCase();
 
-// Инициализация обработчика сокетов
-new GameSocketHandler(io, fetchGameUseCase, joinGameUseCase);
+// Initialize socket handler
+const socketHandler = new SocketHandler(io, removePlayerUseCase, startGameUseCase);
+socketHandler.initialize();
 
-// Маршруты API
-app.get("/api/game/:roomId", (req, res) => gameController.fetchGame(req, res));
-app.post("/api/game/:roomId/join", (req, res) => gameController.joinGame(req, res));
+// Routes
+app.post("/games", (req, res) => gameController.createGame(req, res));
+app.get("/games/:gameId", (req, res) => gameController.getGame(req, res));
+app.post("/games/:gameId/join", (req, res) => gameController.joinGame(req, res));
+app.post("/games/:gameId/removePlayer", (req, res) => gameController.removePlayer(req, res));
+app.post("/games/:gameId/start", (req, res) => gameController.startGame(req, res));
 
-// Health check
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    service: "game-service",
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Обработка ошибок
-app.use((err: any, req: any, res: any, next: any) => {
-  logger.error(`API Error: ${err.stack}`);
-  res.status(500).json({ error: "Internal Server Error" });
-});
-
-const PORT = process.env.GAME_SERVICE_PORT || 5001;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  logger.info(`Game Service started on port ${PORT}`);
-  logger.info(`CORS configured for: ${process.env.CORS_ORIGIN || "all origins"}`);
+  console.log(`Server is running on port ${PORT}`);
 });

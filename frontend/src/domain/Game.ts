@@ -1,43 +1,62 @@
-// src/domain/Game.ts
 import { Player } from "./Player";
 import { Card } from "./Card";
 
+export type GameStatus = "waiting" | "starting" | "in_progress" | "finished";
 export type GameStage = 
-  | "card_selection" 
-  | "initial_argumentation" 
-  | "team_discussion" 
-  | "judge_speech" 
-  | "final_decision";
+    | "card_selection" 
+    | "initial_argumentation" 
+    | "team_discussion" 
+    | "judge_speech" 
+    | "final_decision";
 
-export default class Game {
-  public team1: Player[]; // Команда 1
-  public team2: Player[]; // Команда 2
-  public judge: Player;
+export class Game {
+    public team1: Player[];
+    public team2: Player[];
+    public judge: Player | null;
+    public path1: Card[];
+    public path2: Card[];
+    public currentTurn: { seatNumber: number; stage: GameStage } | null;
+    public timer: number;
+    public round: number;
 
-  constructor(
-    public id: string,
-    public roomId: string,
-    public round: number,
-    public players: Player[],
-    public currentJudgeId: string,
-    public path1: (Card | null)[] = [],
-    public path2: (Card | null)[] = [],
-    public currentTurn: {
-      seatNumber: number;
-      stage: GameStage;
-    } | null = null,
-    public timer: number = 0
-  ) {
-    const judgeIndex = this.players.findIndex((p) => p.id === this.currentJudgeId);
-    this.judge = this.players[judgeIndex];
-    this.team1 = [];
-    this.team2 = [];
+    constructor(
+        public readonly id: string,
+        public readonly players: Player[],
+        public status: GameStatus,
+        public currentJudgeId: string | null = null,
+        path1: Card[] = [],
+        path2: Card[] = [],
+        currentTurn: { seatNumber: number; stage: GameStage } | null = null,
+        timer: number = 0,
+        round: number = 1
+    ) {
+        this.path1 = path1;
+        this.path2 = path2;
+        this.currentTurn = currentTurn;
+        this.timer = timer;
+        this.round = round;
+        this.judge = null;
+        this.team1 = [];
+        this.team2 = [];
 
-    for (let i = 1; i <= 3; i++) {
-      const leftPlayer = this.players[(judgeIndex - i + 7) % 7];
-      const rightPlayer = this.players[(judgeIndex + i) % 7];
-      if (leftPlayer) this.team1.push(leftPlayer);
-      if (rightPlayer) this.team2.push(rightPlayer);
+        if (currentJudgeId && players.length > 0) {
+            this.setJudge(currentJudgeId);
+        }
     }
-  }
+
+    private setJudge(judgeId: string): void {
+        const judgeIndex = this.players.findIndex(p => p.id === judgeId);
+        if (judgeIndex === -1) return;
+
+        this.judge = this.players[judgeIndex];
+        this.currentJudgeId = judgeId;
+        
+        // ��������� �������
+        for (let i = 1; i <= 3; i++) {
+            const leftPlayer = this.players[(judgeIndex - i + this.players.length) % this.players.length];
+            const rightPlayer = this.players[(judgeIndex + i) % this.players.length];
+            if (leftPlayer) this.team1.push(leftPlayer);
+            if (rightPlayer) this.team2.push(rightPlayer);
+        }
+    }
 }

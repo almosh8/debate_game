@@ -1,39 +1,87 @@
-﻿import { LevelDBClient } from "../infrastructure/database/DatabaseClient";
-import { GameRepository } from "../infrastructure/repositories/IGameRepository";
-import { FetchGameUseCase } from "../application/useCases/FetchGameUseCase";
+import { DatabaseClient } from "../infrastructure/DatabaseClient";
+import { GameRepository } from "../infrastructure/repositories/GameRepository";
+import { CreateGameUseCase } from "../application/useCases/CreateGameUseCase";
+import { GetGameUseCase } from "../application/useCases/GetGameUseCase";
 import { JoinGameUseCase } from "../application/useCases/JoinGameUseCase";
-import { GameService } from "../application/services/GameService";
+import { RemovePlayerUseCase } from "../application/useCases/RemovePlayerUseCase";
+import { StartGameUseCase } from "../application/useCases/StartGameUseCase";
+import { GetGameController } from "../presentation/controllers/GetGameController";
 import { GameController } from "../presentation/controllers/GameController";
+import { Logger } from "../utils/Logger";
+import { LevelDBClient } from "../infrastructure/LevelDBClient";
+import { Server } from "socket.io";
+import { SocketHandler } from "../presentation/socketHandler";
 
 export class DependencyContainer {
-  private gameController: GameController;
-  private fetchGameUseCase: FetchGameUseCase;
+  private db: DatabaseClient;
+  private gameRepository: GameRepository; // Исправлено на camelCase
+  private createGameUseCase: CreateGameUseCase;
+  private getGameUseCase: GetGameUseCase;
   private joinGameUseCase: JoinGameUseCase;
+  private removePlayerUseCase: RemovePlayerUseCase; // Исправлено на camelCase
+  private startGameUseCase: StartGameUseCase;
+  private gameController: GameController;
+  private getGameController: GetGameController;
+  private socketHandler: SocketHandler;
+  private logger: Logger = Logger.getInstance();
 
-  constructor() {
-    const db = new LevelDBClient();
-    const gameRepo = new GameRepository(db);
+  constructor(private io: Server) {
+    this.logger.info("Initializing dependencies...");
+
+    // Initialize database clients
+    this.db = new LevelDBClient();
     
-    this.fetchGameUseCase = new FetchGameUseCase(gameRepo);
-    this.joinGameUseCase = new JoinGameUseCase(gameRepo);
-    
-    const gameService = new GameService(
-      this.fetchGameUseCase,
-      this.joinGameUseCase
+    // Initialize repositories
+    this.gameRepository = new GameRepository(this.db);
+
+   
+    // Initialize use cases
+    this.createGameUseCase = new CreateGameUseCase(this.gameRepository);
+    this.getGameUseCase = new GetGameUseCase(this.gameRepository);
+    this.joinGameUseCase = new JoinGameUseCase(this.gameRepository);
+    this.removePlayerUseCase = new RemovePlayerUseCase(this.gameRepository);
+    this.startGameUseCase = new StartGameUseCase(
+      this.gameRepository
+    );
+
+    // Initialize socket handler
+    this.socketHandler = new SocketHandler(
+      this.io, 
+      this.removePlayerUseCase,
+      this.startGameUseCase
+    );
+
+    // Initialize controllers - единая инициализация GameController
+    this.gameController = new GameController(
+      this.createGameUseCase,
+      this.getGameUseCase,
+      this.joinGameUseCase,
+      this.removePlayerUseCase,
+      this.startGameUseCase
     );
     
-    this.gameController = new GameController(gameService);
+    this.getGameController = new GetGameController(this.getGameUseCase);
+
+    this.logger.info("Dependencies initialized successfully");
   }
 
-  public getGameController(): GameController {
+  _getGameController(): GameController {
     return this.gameController;
   }
 
-  public getFetchGameUseCase(): FetchGameUseCase {
-    return this.fetchGameUseCase;
+  getGetGameController(): GetGameController {
+    return this.getGameController;
   }
 
-  public getJoinGameUseCase(): JoinGameUseCase {
-    return this.joinGameUseCase;
+  getRemovePlayerUseCase(): RemovePlayerUseCase {
+    return this.removePlayerUseCase;
+  }
+
+  getStartGameUseCase(): StartGameUseCase {
+    return this.startGameUseCase;
+  }
+
+  getSocketHandler(): SocketHandler {
+    return this.socketHandler;
   }
 }

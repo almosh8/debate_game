@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import GameTable from "../components/GameTable";
 import Game from "../domain/Game";
-import { fetchRoomData } from "../services/api";
+import { fetchGameData } from "../services/api";
 import { Logger } from "../utils/Logger";
 
 const GamePage: React.FC = () => {
@@ -18,7 +18,7 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     const loadRoomData = async () => {
       try {
-        const data: Game = await fetchRoomData('TEST'); // Запрос к API
+        const data: Game = await fetchGameData('TEST'); // Запрос к API
         setGameData(data);
       } catch (err) {
 
