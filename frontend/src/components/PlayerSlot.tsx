@@ -43,7 +43,6 @@ const playerColor = player.color;
     setIsFullScreen(!isFullScreen);
     logger.info(`Fullscreen toggled: ${isFullScreen}`);
   };
-  console.log(isActive, textColor)
 
   useEffect(() => {
     if (!showArrow || !targetCard || !cardRef.current || !card) return;

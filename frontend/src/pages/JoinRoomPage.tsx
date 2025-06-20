@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoomUpdates, initSocket, disconnectSocket } from "../services/api";
+import { joinRoom, getOccupiedSeats, subscribeToRoomUpdates, unsubscribeFromRoomUpdates, initSocket, disconnectSocket } from "../services/RoomApi";
 import { Room } from "../domain/Room";
 import { Socket } from "socket.io-client";
 import { Logger } from "../utils/Logger";

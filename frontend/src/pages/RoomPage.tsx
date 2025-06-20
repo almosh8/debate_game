@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRoom, subscribeToRoomUpdates, removePlayer, initSocket, disconnectSocket, startGame } from '../services/api';
+import { getRoom, subscribeToRoomUpdates, removePlayer, initSocket, disconnectSocket, startGame } from '../services/RoomApi';
 import { Logger } from '../utils/Logger';
 import { Socket } from 'socket.io-client';
 

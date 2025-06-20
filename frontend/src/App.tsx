@@ -13,7 +13,7 @@ const App: React.FC = () => {
         <Route path="/" element={<CreateRoomForm />} />
         <Route path="/room/:roomId" element={<RoomPage />} />
         <Route path="/join/:roomId" element={<JoinRoomPage />} />
-        <Route path="/game/:roomId" element={<GamePage />} /> {/* Маршрут для страницы входа */}
+        <Route path="/game/:gameId" element={<GamePage />} /> {/* Маршрут для страницы входа */}
       </Routes>
     </Router>
   );

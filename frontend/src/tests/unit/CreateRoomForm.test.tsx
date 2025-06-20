@@ -2,7 +2,7 @@
 import React from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
 import CreateRoomForm from "../../pages/CreateRoomForm";
-import { createRoom } from "../../services/api";
+import { createRoom } from "../../services/RoomApi";
 
 jest.mock("../../services/api");
 

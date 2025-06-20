@@ -7,7 +7,7 @@ interface JudgeProps {
     id: string;
     username: string;
     seatNumber: number;
-  };
+  } | null;
   currentTurn: {
     seatNumber: number;
     stage: string;
@@ -15,6 +15,16 @@ interface JudgeProps {
 }
 
 const Judge: React.FC<JudgeProps> = ({ judge, currentTurn }) => {
+
+  if(judge == null) {
+    return (
+    <div className="judge">
+      <div className="judge-info">
+        <span>Судья: None</span>
+      </div>
+    </div>)
+  }
+
   const isActive = currentTurn?.stage === "judge_speech" || currentTurn?.stage === "final_decision";
   const backgroundColor = isActive ? PLAYER_COLORS[judge.seatNumber % PLAYER_COLORS.length] : "transparent";
   const textColor = isActive ? 

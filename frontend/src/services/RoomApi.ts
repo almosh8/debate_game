@@ -2,24 +2,14 @@ import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { Logger } from "../utils/Logger";
 import { Player } from "../domain/Player";
-import Game from "../domain/Game";
+import { Game } from "../domain/Game";
 import { Card } from "../domain/Card";
 
 const logger = Logger.getInstance();
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.REACT_APP_API_ROOM_URL || "http://localhost:5000";
 
 logger.info(`API_BASE_URL: ${API_BASE_URL}`);
-
-export const fetchGameData = async (roomId: string): Promise<Game> => {
-  // Фиктивные данные для тестов
-  
-
-  // Имитируем задержку сети
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return game;
-};
 
 export const createRoom = async (adminId: string) => {
   logger.info(`Creating room with adminId: ${adminId}`);
@@ -34,7 +24,8 @@ export const createRoom = async (adminId: string) => {
 };
 
 export const getRoom = async (roomId: string, socket: Socket) => {
-  logger.info(`Fetching room: ${roomId}`);
+  logger.info(`Fetching room: ${roomId}\n
+    URL: ${API_BASE_URL}/rooms/${roomId}`);
   try {
     const response = await axios.get(`${API_BASE_URL}/rooms/${roomId}`);
     logger.info(`Room fetched successfully: ${JSON.stringify(response.data)}`);

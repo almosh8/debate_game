@@ -1,7 +1,7 @@
 // src/tests/unit/useRooms.test.ts
 import { renderHook } from "@testing-library/react-hooks";
 import useRooms from "../../hooks/useRooms";
-import { getRooms } from "../../services/api";
+import { getRooms } from "../../services/RoomApi";
 
 jest.mock("../../services/api");
 

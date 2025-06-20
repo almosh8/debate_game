@@ -5,6 +5,7 @@ import { Player } from "../domain/Player";
 import { Card } from "../domain/Card";
 import "../styles/styles.css";
 import { PLAYER_COLORS } from "../utils/constants";
+import { Logger } from "../utils/Logger";
 
 interface TeamProps {
   players: Player[];
@@ -42,18 +43,30 @@ const Team: React.FC<TeamProps> = ({ players, path, otherPath, position, current
     return null;
   };
 
+  const createCardInstance = (cardData: any): Card | null => {
+    if (!cardData) return null;
+    return new Card(
+      cardData.id,
+      cardData.type,
+      cardData.name,
+      cardData.description,
+      cardData.imageUrl
+    );
+  };
+
   return (
     <div className={`team ${position}`}>
       {players.map((player, index) => {
-        const card = path[index];
+        const cardData = path[index];
+        const card = createCardInstance(cardData);
         const isLastCard = index === path.length - 1;
+        
         const playedOn = isLastCard && card ? card.getPlayedOn() : null;
         const targetCard = playedOn ? findTargetCard(playedOn) : null;
 
         const isPlayerActive = currentTurn?.seatNumber === player.seatNumber && 
                              (currentTurn.stage === "card_selection" || 
                               currentTurn.stage === "initial_argumentation");
-
 
         return (
           <PlayerSlot

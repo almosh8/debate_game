@@ -16,7 +16,7 @@ export class GetGameUseCase {
     this.logger.info(`Fetching game: ${gameId}`);
     try {
 
-      if(gameId === 'TEST') {
+      if(gameId === 'TEST' || gameId === 'test') {
         const players: Player[] = [
     new Player("player1", "Игрок1", "admin", 1, [], "#FF5252"), // Красный
     new Player("player2", "Игрок2", "participant", 2, [], "#4CAF50"), // Зеленый

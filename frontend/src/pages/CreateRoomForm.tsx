@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createRoom } from "../services/api";
+import { createRoom } from "../services/RoomApi";
 import { Room } from "../domain/Room";
 import { Logger } from "../utils/Logger"
 

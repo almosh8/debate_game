@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getRooms } from "../services/api";
+import { getRooms } from "../services/RoomApi";
 import { Logger } from "../utils/Logger"
 
 const logger = Logger.getInstance();

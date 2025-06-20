@@ -7,10 +7,10 @@ export class Player {
     public readonly role: "admin" | "participant",
     public readonly seatNumber: number,
     public readonly cards: Card[] | null = null,
-    public readonly color: string | null = null // Делаем цвет опциональным
+    public readonly color: string = "" // Делаем цвет опциональным
   ) {
     // Если цвет не задан, генерируем его на основе username
-    if (color === null) {
+    if (color === "") {
       this.color = this.generateColorFromUsername(username);
     }
   }

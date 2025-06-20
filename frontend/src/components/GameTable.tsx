@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Team from './Team';
 import Judge from './Judge';
-import Game from '../domain/Game';
+import { Game } from '../domain/Game';
 import '../styles/styles.css';
 
 interface GameTableProps {
