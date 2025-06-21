@@ -1,3 +1,4 @@
+// src/application/useCases/CreateGameUseCase.ts
 import { Game } from "../../domain/Game";
 import { Player } from "../../domain/Player";
 import { IGameRepository } from "../interfaces/IGameRepository";
@@ -11,21 +12,26 @@ export class CreateGameUseCase {
         this.logger.info("CreateGameUseCase initialized");
     }
 
-    async execute(players: Player[]): Promise<Game> {
-        this.logger.info("Creating new game with players");
+    async execute(data: { 
+        roomId: string;
+        players: Player[];
+        adminId: string;
+    }): Promise<Game> {
+        this.logger.info(`Creating new game for room: ${data.roomId}`);
 
-        if (players.length < 3) {
+        if (data.players.length < 3) {
             throw new Error("Minimum 3 players required to start game");
         }
 
         const game = new Game(
-            uuid(),
-            players,
-            "waiting"
+            data.roomId,
+            data.players,
+            "waiting",
+            data.adminId
         );
 
         await this.gameRepository.save(game);
-        this.logger.info(`Game created: ${game.id}`);
+        this.logger.info(`Game created: ${game.id} for room: ${data.roomId}`);
         return game;
     }
 }

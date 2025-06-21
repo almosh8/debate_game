@@ -1,3 +1,4 @@
+// src/domain/Game.ts
 import { Player } from "./Player";
 import { Card } from "./Card";
 
@@ -23,6 +24,7 @@ export class Game {
         public readonly id: string,
         public readonly players: Player[],
         public status: GameStatus,
+        public readonly adminId: string,
         public currentJudgeId: string | null = null,
         path1: Card[] = [],
         path2: Card[] = [],
@@ -51,7 +53,7 @@ export class Game {
         this.judge = this.players[judgeIndex];
         this.currentJudgeId = judgeId;
         
-        // Формируем команды
+        // Р¤РѕСЂРјРёСЂСѓРµРј РєРѕРјР°РЅРґС‹
         for (let i = 1; i <= 3; i++) {
             const leftPlayer = this.players[(judgeIndex - i + this.players.length) % this.players.length];
             const rightPlayer = this.players[(judgeIndex + i) % this.players.length];

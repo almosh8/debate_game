@@ -1,6 +1,8 @@
+// StartGameUseCase.ts
 import { IRoomRepository } from "../interfaces/IRoomRepository";
 import { IGameServiceClient } from "../interfaces/IGameServiceClient";
 import { Logger } from "../../utils/Logger";
+import axios from "axios";
 
 const logger = Logger.getInstance();
 
@@ -46,12 +48,20 @@ export class StartGameUseCase {
       logger.info(`Room status updated to 'starting' for room: ${roomId}`);
 
       // 4. Create game in Game Service
-      const game = await this.gameServiceClient.createGame(roomId, room.players);
-      logger.info(`Game created successfully for room: ${roomId}, gameId: ${game.id}`);
+      const game = await this.gameServiceClient.createGame({
+        roomId,
+        players: room.players,
+        adminId: room.adminId
+      });
+
+      if (!game) {
+        throw new Error("Failed to create game in Game Service");
+      }
 
       // 5. Update room with game ID and new status
-      room.status = "starting";
+      room.status = "in_progress";
       await this.roomRepository.save(room);
+      
       logger.info(`Game started successfully for room: ${roomId}`);
       return { 
         success: true, 
@@ -67,11 +77,6 @@ export class StartGameUseCase {
           room.status = "waiting";
           await this.roomRepository.save(room);
           logger.info(`Reverted room status to 'waiting' for room: ${roomId}`);
-          return { 
-            success: false, 
-            error: error instanceof Error ? error.message : "Failed to start game",
-            room 
-          };
         }
       } catch (revertError) {
         logger.error(`Failed to revert room status for room ${roomId}: ${revertError}`);
@@ -79,7 +84,8 @@ export class StartGameUseCase {
 
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : "Failed to start game" 
+        error: error instanceof Error ? error.message : "Failed to start game",
+        room: await this.roomRepository.findById(roomId)
       };
     }
   }

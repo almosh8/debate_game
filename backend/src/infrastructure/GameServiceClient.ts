@@ -1,40 +1,40 @@
-import { Game } from "../domain/Game";
+// GameServiceClient.ts
 import { Player } from "../domain/Player";
 import { Logger } from "../utils/Logger";
-import { Card } from "../domain/Card";
+import axios from "axios";
+import { IGameServiceClient } from "../application/interfaces/IGameServiceClient";
 
 const logger = Logger.getInstance();
 
-export class GameServiceClient {
-  async createGame(roomId: string, players: Player[]): Promise<Game> {
-    logger.info(`Creating game for room: ${roomId}`);
-    
-    // Определяем первого судью (обычно это администратор комнаты)
-    const firstJudge = players.find(player => player.role === "admin") || players[0];
-    
-    // Создаем начальные карты (пустые массивы, будут заполнены при старте раунда)
-    const initialPath1: Card[] = [];
-    const initialPath2: Card[] = [];
+interface CreateGameRequest {
+  roomId: string;
+  players: Player[];
+  adminId: string;
+}
 
-    // Создаем новую игру
-    const game = new Game(
-      `game_${roomId}`, // ID игры
-      roomId,           // ID комнаты
-      1,                // Начинаем с 1 раунда
-      players,          // Все игроки
-      firstJudge.id,    // ID текущего судьи
-      initialPath1,     // Путь 1 (пока пустой)
-      initialPath2,     // Путь 2 (пока пустой)
-      {                // Текущий ход
-        seatNumber: 1,  // Начинает игрок с местом 1
-        stage: "card_selection" // Начинаем с этапа выбора карт
-      },
-      60                // Таймер 60 секунд
-    );
+export class GameServiceClient implements IGameServiceClient {
+  private readonly GAME_SERVICE_URL = process.env.GAME_SERVICE_URL || "http://localhost:5001";
 
-    logger.info(`Game created successfully for room: ${roomId}`);
-    return game;
+  async createGame(request: CreateGameRequest): Promise<any> {
+    try {
+      logger.info(`Creating game in Game Service for room: ${request.roomId}`);
+      
+      const response = await axios.post(`${this.GAME_SERVICE_URL}/games`, {
+        roomId: request.roomId,
+        players: request.players.map(player => ({
+          id: player.id,
+          username: player.username,
+          role: player.role,
+          seatNumber: player.seatNumber
+        })),
+        adminId: request.adminId
+      });
+
+      logger.info(`Game created successfully for room: ${request.roomId}`);
+      return response.data;
+    } catch (error) {
+      logger.error(`Error creating game in Game Service: ${error}`);
+      throw error;
+    }
   }
-
-
 }
