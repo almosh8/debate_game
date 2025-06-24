@@ -3,7 +3,6 @@ import { Game } from "../../domain/Game";
 import { Player } from "../../domain/Player";
 import { IGameRepository } from "../interfaces/IGameRepository";
 import { Logger } from "../../utils/Logger";
-import { v4 as uuid } from "uuid";
 
 export class CreateGameUseCase {
     private logger: Logger = Logger.getInstance();

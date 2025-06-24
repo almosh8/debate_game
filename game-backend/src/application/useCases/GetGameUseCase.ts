@@ -47,6 +47,7 @@ export class GetGameUseCase {
     gameId, // ID комнаты
     players, // Список игроков
     "in_progress", // Статус игры
+    "player7", // ID админа
     "player7", // ID текущего судьи
     cardsTop, // Карты на левом пути (path1)
     cardsBottom, // Карты на правом пути (path2)

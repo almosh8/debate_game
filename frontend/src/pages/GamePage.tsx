@@ -135,6 +135,8 @@ const GamePage: React.FC = () => {
   if (error) return <div style={styles.error}>{error}</div>;
   if (!game) return <div style={styles.error}>Данные игры не найдены</div>;
 
+  console.log('GAME OBJECT\n', game)
+
   return (
     <div>
       <GameTable 

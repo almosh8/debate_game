@@ -2,7 +2,6 @@ import { DatabaseClient } from "../infrastructure/DatabaseClient";
 import { GameRepository } from "../infrastructure/repositories/GameRepository";
 import { CreateGameUseCase } from "../application/useCases/CreateGameUseCase";
 import { GetGameUseCase } from "../application/useCases/GetGameUseCase";
-import { JoinGameUseCase } from "../application/useCases/JoinGameUseCase";
 import { RemovePlayerUseCase } from "../application/useCases/RemovePlayerUseCase";
 import { StartGameUseCase } from "../application/useCases/StartGameUseCase";
 import { GetGameController } from "../presentation/controllers/GetGameController";
@@ -17,7 +16,6 @@ export class DependencyContainer {
   private gameRepository: GameRepository; // Исправлено на camelCase
   private createGameUseCase: CreateGameUseCase;
   private getGameUseCase: GetGameUseCase;
-  private joinGameUseCase: JoinGameUseCase;
   private removePlayerUseCase: RemovePlayerUseCase; // Исправлено на camelCase
   private startGameUseCase: StartGameUseCase;
   private gameController: GameController;
@@ -38,7 +36,6 @@ export class DependencyContainer {
     // Initialize use cases
     this.createGameUseCase = new CreateGameUseCase(this.gameRepository);
     this.getGameUseCase = new GetGameUseCase(this.gameRepository);
-    this.joinGameUseCase = new JoinGameUseCase(this.gameRepository);
     this.removePlayerUseCase = new RemovePlayerUseCase(this.gameRepository);
     this.startGameUseCase = new StartGameUseCase(
       this.gameRepository
@@ -54,10 +51,7 @@ export class DependencyContainer {
     // Initialize controllers - единая инициализация GameController
     this.gameController = new GameController(
       this.createGameUseCase,
-      this.getGameUseCase,
-      this.joinGameUseCase,
-      this.removePlayerUseCase,
-      this.startGameUseCase
+      this.getGameUseCase
     );
     
     this.getGameController = new GetGameController(this.getGameUseCase);

@@ -33,9 +33,9 @@ socketHandler.initialize();
 // Routes
 app.post("/games", (req, res) => gameController.createGame(req, res));
 app.get("/games/:gameId", (req, res) => gameController.getGame(req, res));
-app.post("/games/:gameId/join", (req, res) => gameController.joinGame(req, res));
-app.post("/games/:gameId/remove-player", (req, res) => gameController.removePlayer(req, res));
-app.post("/games/:gameId/start", (req, res) => gameController.startGame(req, res));
+//app.post("/games/:gameId/join", (req, res) => gameController.joinGame(req, res));
+//app.post("/games/:gameId/remove-player", (req, res) => gameController.removePlayer(req, res));
+//app.post("/games/:gameId/start", (req, res) => gameController.startGame(req, res));
 
 const PORT = process.env.PORT || 5001; // Изменен порт для game service
 server.listen(PORT, () => {

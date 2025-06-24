@@ -2,22 +2,14 @@
 import { Request, Response } from "express";
 import { CreateGameUseCase } from "../../application/useCases/CreateGameUseCase";
 import { GetGameUseCase } from "../../application/useCases/GetGameUseCase";
-import { JoinGameUseCase } from "../../application/useCases/JoinGameUseCase";
-import { RemovePlayerUseCase } from "../../application/useCases/RemovePlayerUseCase";
-import { Player } from "../../domain/Player";
 import { Logger } from "../../utils/Logger";
-import { StartGameUseCase } from "../../application/useCases/StartGameUseCase";
-import { Game } from "../../domain/Game";
 
 export class GameController {
     private logger: Logger = Logger.getInstance();
 
     constructor(
         private createGameUseCase: CreateGameUseCase,
-        private getGameUseCase: GetGameUseCase,
-        private joinGameUseCase: JoinGameUseCase,
-        private removePlayerUseCase: RemovePlayerUseCase,
-        private startGameUseCase: StartGameUseCase
+        private getGameUseCase: GetGameUseCase
     ) {
         this.logger.info("GameController initialized");
     }
@@ -82,5 +74,4 @@ export class GameController {
         }
     }
 
-    // ... остальные методы остаются без изменений
 }

@@ -2,7 +2,6 @@
 import { IRoomRepository } from "../interfaces/IRoomRepository";
 import { IGameServiceClient } from "../interfaces/IGameServiceClient";
 import { Logger } from "../../utils/Logger";
-import axios from "axios";
 
 const logger = Logger.getInstance();
 

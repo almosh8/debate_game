@@ -291,7 +291,8 @@ const RoomPage: React.FC = () => {
   const canStartGame = isAdmin && players.length >= 3 && room.status === 'waiting';
 
   if(room.status === "entering") {
-    navigate(`/game/${room.roomId}`) //roomId the same as gameId
+    console.log(room)
+    navigate(`/game/${room.id}`) //roomId the same as gameId
   }
 
   return (
